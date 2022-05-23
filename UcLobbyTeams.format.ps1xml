@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+  <ViewDefinitions>
+    <View>
+      <Name>TeamsOnlyModeReadiness</Name>
+      <ViewSelectedBy>
+        <TypeName>TeamsOnlyModeReadiness</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader />
+		  <TableColumnHeader>
+            <Width>9</Width>
+          </TableColumnHeader>
+		  <TableColumnHeader>
+			<Label>Discovery Record</Label>
+		  </TableColumnHeader>
+		  <TableColumnHeader>
+			<Label>Federation Record</Label>
+		  </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Domain</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Status</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>DiscoverRecord</PropertyName>
+              </TableColumnItem>
+			<TableColumnItem>
+                <PropertyName>FederationRecord</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>
