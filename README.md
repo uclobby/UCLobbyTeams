@@ -12,6 +12,8 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcTeamsForest
 <br/>Get-UcM365Domains
 <br/>Test-UcTeamsOnlyModeReadiness
+<br/>Get-UcTeamUsersEmail
+<br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcArch
 
 <br/>More info:
@@ -19,6 +21,18 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>
 <br/>Change Log:
+<br/>0.1.3 - 2022/06/14
+<ul>
+  <li>Get-UcTeamVersion
+  <br/>Fixed the issue where the version was limited to 4 digits.</li>
+  <br/>Added information for Ring, Environment, Region, CloudEnvironment.</li>
+  <li>Get-UcTeamUsersEmail
+  <br/>This function returns a list of users email address that are part of a Team.</li>
+  </li>
+  <li>Get-UcTeamsWithSingleOwner
+  <br/>This function returns a list of Teams that only have a single owner.</li>
+  </li>
+</ul>
 <br/>0.1.2 - 2022/05/23
 <ul>
   <li>Test-UcTeamsOnlyModeReadiness
@@ -31,4 +45,4 @@ Please use the PowerShell Gallery to install this module:
 <br/>0.1.0 - 2022/03/25
 <ul>
   <li>Initial Release uploaded to PowerShell Gallery</li>
-</ul>
+</ul>![image](https://user-images.githubusercontent.com/51489776/173079019-06d73b35-9b08-4824-9aa4-e72601f8272c.png)
