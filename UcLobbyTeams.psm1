@@ -71,30 +71,66 @@ Get Microsoft Teams Desktop Version
 This function returns the installed Microsoft Teams desktop version for each user profile.
 #>
 Function Get-UcTeamsVersion {
-    $regexVersion = '("version":")(\d{1,4}\.\d{1,4}.\d{1,4}\.\d{1,4})'
+    $regexVersion = '("version":")([0-9.]*)'
+    $regexRing = '("ring":")(\w*)'
+    $regexEnv = '("environment":")(\w*)'
+    $regexCloudEnv = '("cloudEnvironment":")(\w*)'
+    $regexRegion = '("region":")([a-zA-Z0-9._-]*)'
+    
+    $outTeamsVersion = [System.Collections.ArrayList]::new()
+    
     $currentDateFormat = [cultureinfo]::CurrentCulture.DateTimeFormat.ShortDatePattern
     $Profiles = Get-childItem 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList' | ForEach-Object {Get-ItemProperty $_.pspath } | Where-Object {$_.fullprofile -eq 1}
     foreach($Profile in $Profiles){
         $TeamsSettingPath = $Profile.ProfileImagePath + "\AppData\Roaming\Microsoft\Teams\settings.json"
         if(Test-Path $TeamsSettingPath -ErrorAction SilentlyContinue) {
+            $TeamsSettings = Get-Content -Path $TeamsSettingPath
+            $Version = ""
+            $Ring = ""
+            $Env = ""
+            $CloudEnv = ""
+            $Region = ""
             try {
-                $TeamsSettings = Get-Content -Path $TeamsSettingPath
-                $Version = [regex]::Match($TeamsSettings,$regexVersion).captures.groups[2].value
-            } catch {
-                $Version = ""
-            }
+                $VersionTemp = [regex]::Match($TeamsSettings,$regexVersion).captures.groups
+                if($VersionTemp.Count -ge 2){
+                    $Version = $VersionTemp[2].value
+                }
+                $RingTemp = [regex]::Match($TeamsSettings,$regexRing).captures.groups
+                if($RingTemp.Count -ge 2){
+                    $Ring = $RingTemp[2].value
+                }
+                $EnvTemp = [regex]::Match($TeamsSettings,$regexEnv).captures.groups
+                if($EnvTemp.Count -ge 2){
+                    $Env = $EnvTemp[2].value
+                }
+                $CloudEnvTemp = [regex]::Match($TeamsSettings,$regexCloudEnv).captures.groups
+                if($CloudEnvTemp.Count -ge 2){
+                    $CloudEnv = $CloudEnvTemp[2].value
+                }
+                $RegionTemp = [regex]::Match($TeamsSettings,$regexRegion).captures.groups
+                if($RegionTemp.Count -ge 2){
+                    $Region = $RegionTemp[2].value
+                }
+            } catch { }
             $TeamsApp = $Profile.ProfileImagePath + "\AppData\Local\Microsoft\Teams\current\Teams.exe"
             $InstallDateStr = Get-Content ($Profile.ProfileImagePath + "\AppData\Roaming\Microsoft\Teams\installTime.txt")
             $TeamsVersion = New-Object –TypeName PSObject -Property @{
                 Profile = (New-Object System.Security.Principal.SecurityIdentifier($Profile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
                 ProfilePath = $Profile.ProfileImagePath
                 Version = $Version
+                Ring = $Ring
+                Environment = $Env
+                CloudEnvironment = $CloudEnv
+                Region = $Region
                 Arch = Get-UcArch $TeamsApp
                 InstallDate = [Datetime]::ParseExact($InstallDateStr, 'M/d/yyyy', $null) | Get-Date -Format $currentDateFormat
             }
-            Write-Output $TeamsVersion
+            
+            $TeamsVersion.PSObject.TypeNAmes.Insert(0,'TeamsVersion')
+            $outTeamsVersion.Add($TeamsVersion) | Out-Null
         }
     }
+    return $outTeamsVersion
 }
 
 <#
@@ -297,4 +333,70 @@ Param(
         $outTeamsOnly.Add($Validation) | Out-Null
     }
     return $outTeamsOnly
+}
+
+<#
+.SYNOPSIS
+Get Users Email Address that are in a Team
+.DESCRIPTION
+This function returns a list of users email address that are part of a Team.
+#>
+Function Get-UcTeamUsersEmail{
+    [cmdletbinding(SupportsShouldProcess)]
+Param(
+ [Parameter(Mandatory=$false)]
+ [string]$TeamName,
+ [Parameter(Mandatory=$false)]
+ [ValidateSet("Owner", "User", "Guest")] 
+ [string]$Role
+)
+    $output = [System.Collections.ArrayList]::new()
+    if($TeamName){
+        $Teams = Get-Team -DisplayName $TeamName
+    } else {
+        if($ConfirmPreference){
+            $title    = 'Confirm'
+            $question = 'Are you sure that you want to list all Teams?'
+            $choices  = '&Yes', '&No'
+            $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+        } else {
+            $decision = 0
+        }
+        if ($decision -eq 0) {
+            $Teams = Get-Team
+        } else {
+            return
+        }
+    }
+    foreach($Team in $Teams) { 
+        if($Role){
+            $TeamMembers = Get-TeamUser -GroupId $Team.GroupID -Role $Role
+        } else {
+            $TeamMembers = Get-TeamUser -GroupId $Team.GroupID 
+        }
+        foreach ($TeamMember in $TeamMembers){
+            $Email =( Get-csOnlineUser $TeamMember.User |Select-Object @{Name='PrimarySMTPAddress';Expression={$_.ProxyAddresses -cmatch '^SMTP:' -creplace 'SMTP:'}}).PrimarySMTPAddress
+            $Member =  New-Object –TypeName PSObject -Property @{
+                    TeamGroupID = $Team.GroupID
+                    TeamDisplayName = $Team.DisplayName
+                    TeamVisibility = $Team.Visibility
+                    UPN = $TeamMember.User
+                    Role = $TeamMember.Role
+                    Email = $Email
+            }
+            $Member.PSObject.TypeNAmes.Insert(0,'TeamUsersEmail')
+            $output.Add($Member) | Out-Null
+        }
+    }
+    return $output
+}
+
+<#
+.SYNOPSIS
+Get Teams that have a single owner
+.DESCRIPTION
+This function returns a list of Teams that only have a single owner.
+#>
+Function Get-UcTeamsWithSingleOwner{
+    Get-UcTeamUsersEmail -Role Owner -Confirm:$false | Group-Object -Property TeamDisplayName | Where-Object {$_.Count -lt 2} | Select-Object -ExpandProperty Group
 }
