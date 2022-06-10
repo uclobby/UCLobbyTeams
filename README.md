@@ -24,7 +24,7 @@ Please use the PowerShell Gallery to install this module:
 <br/>0.1.3 - 2022/06/14
 <ul>
   <li>Get-UcTeamVersion
-  <br/>Fixed the issue where the version was limited to 4 digits.</li>
+  <br/>Fixed the issue where the version was limited to 4 digits.
   <br/>Added information for Ring, Environment, Region.</li>
   <li>Get-UcTeamUsersEmail
   <br/>This function returns a list of users email address that are part of a Team.</li>
