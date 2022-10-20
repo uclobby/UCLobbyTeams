@@ -30,7 +30,7 @@ Please use the PowerShell Gallery to install this module:
 <br/>Change Log:
 <br/>0.2.0 - 2022/10/20
 <ul>
-  <li>Get-UcTeamVersion
+  <li>Get-UcTeamsVersion
   <br/>Added Computer parameter to get Teams version on a remote machine.
   <br/>Added Path parameter to specify a path that contains Teams log files.</li>
   <li>Get-UcTeamsDevice
