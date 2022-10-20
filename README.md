@@ -6,21 +6,41 @@ Please use the PowerShell Gallery to install this module:
 <br/> https://www.powershellgallery.com/packages/UcLobbyTeams/
 <br/>
 <br/>Available cmdlets:
-<br/>
+
 <br/>Get-UcTeamsVersion
+
 <br/>Get-UcM365TenantId 
+
 <br/>Get-UcTeamsForest
 <br/>Get-UcM365Domains
 <br/>Test-UcTeamsOnlyModeReadiness
+
 <br/>Get-UcTeamUsersEmail
 <br/>Get-UcTeamsWithSingleOwner
+
+<br/>Get-UcTeamsDevice
+<br/>Test-UcTeamsDevicesConditionalAccessPolicy
+<br/>Test-UcTeamsDevicesCompliancePolicy
+
 <br/>Get-UcArch
 
 <br/>More info:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
-<br/>
 <br/>Change Log:
+<br/>0.2.0 - 2022/10/20
+<ul>
+  <li>Get-UcTeamVersion
+  <br/>Added Computer parameter to get Teams version on a remote machine.
+  <br/>Added Path parameter to specify a path that contains Teams log files.</li>
+  <li>Get-UcTeamsDevice
+  <br/>New cmdlet that get Microsoft Teams Devices information using MS Graph API.
+  </li>
+  <li>Test-UcTeamsDevicesConditionalAccessPolicy
+  <br/>New cmdlet that return that validates which Conditional Access policies are supported by Microsoft Teams Android Devices.</li>
+  <li>Test-UcTeamsDevicesCompliancePolicy
+  <br/>New cmdlet that return validates which Intune Compliance policies are supported by Microsoft Teams Android Devices.</li>
+</ul>
 <br/>0.1.3 - 2022/06/10
 <ul>
   <li>Get-UcTeamVersion

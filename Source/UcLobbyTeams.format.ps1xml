@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>TeamsVersion</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsVersion</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Windows Profile</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Profile Path</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader>
+						<Label>Install Date</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>Profile</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>ProfilePath</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Arch</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Version</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Environment</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Ring</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Region</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>InstallDate</PropertyName>
+							</TableColumnItem>							
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsVersionFromPath</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsVersionFromPath</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Windows Sign In User</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Teams Sign In User</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader />
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>WindowsUser</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>TeamsUser</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Version</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Environment</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Ring</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Region</PropertyName>
+							</TableColumnItem>								
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsOnlyModeReadiness</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsOnlyModeReadiness</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader />
+					<TableColumnHeader>
+						<Width>9</Width>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Discovery Record</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Federation Record</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>Domain</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Status</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DiscoverRecord</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>FederationRecord</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamUsersEmail</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamUsersEmail</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Team Display Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader />
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>TeamDisplayName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Role</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>UPN</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Email</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsDevice</Name>
+  			<ViewSelectedBy>
+    			<TypeName>TeamsDevice</TypeName>
+  			</ViewSelectedBy>
+			<ListControl>
+      			<ListEntries>
+        			<ListEntry>
+          				<ListItems>
+            				<ListItem>
+              					<PropertyName>DeviceID</PropertyName>
+            				</ListItem>
+            				<ListItem>
+              					<PropertyName>DeviceType</PropertyName>
+            				</ListItem>
+							<ListItem>
+								<PropertyName>UserDisplayName</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>UserUPN</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Notes</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>CompanyAssetTag</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Manufacturer</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Model</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SerialNumber</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>MacAddresses</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>WhenCreated</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>WhenChanged</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ChangedByUser</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>DisplayConfiguration</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>CameraConfiguration</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SpeakerConfiguration</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>MicrophoneConfiguration</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TeamsClientConfiguration</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>HardwareConfiguration</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SystemConfiguration</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>LastUpdate</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TeamsAdminAgentVersion</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>FirmwareVersion</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>CompanyPortalVersion</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>OEMAgentAppVersion</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TeamsAppVersion</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ActivePeripherals</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>LastHistoryAction</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>LastHistoryStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>LastHistoryInitiatedBy</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>LastHistoryModifiedDate</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>LastHistoryErrorCode</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>LastHistoryErrorMessage</PropertyName>
+							</ListItem>
+          				</ListItems>
+        			</ListEntry>
+      			</ListEntries>
+    		</ListControl>
+		</View>
+		<View>
+			<Name>TeamsDeviceList</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsDeviceList</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Device Type</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Device ID</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>User Display Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>User UPN</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader>
+						<Label>Device Health</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>DeviceType</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DeviceId</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>UserDisplayName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>UserUPN</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Manufacturer</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Model</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DeviceHealth</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsDeviceConditionalAccessPolicy</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsDeviceConditionalAccessPolicy</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Conditional Access Policy Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Policy State</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader>
+						<Label>Teams Device Status</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>CAPolicyName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>CAPolicyState</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Setting</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Value</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>TeamsDevicesStatus</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Comment</PropertyName>
+							</TableColumnItem>														
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsDeviceConditionalAccessPolicySummary</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsDeviceConditionalAccessPolicySummary</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Conditional Access Policy Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Policy ID</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Policy State</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Teams Device Status</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>CAPolicyName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>CAPolicyID</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>CAPolicyState</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>TeamsDevicesStatus</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsDeviceCompliancePolicy</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsDeviceCompliancePolicy</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Intune Compliance Policy Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+					<TableColumnHeader />
+					<TableColumnHeader>
+						<Label>Teams Device Status</Label>
+					</TableColumnHeader>
+					<TableColumnHeader />
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>PolicyName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Setting</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Value</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>TeamsDevicesStatus</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Comment</PropertyName>
+							</TableColumnItem>														
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsDeviceCompliancePolicySumary</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsDeviceCompliancePolicySumary</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Intune Compliance Policy Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Policy ID</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Teams Device Status</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>PolicyName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>PolicyID</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>TeamsDevicesStatus</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>
