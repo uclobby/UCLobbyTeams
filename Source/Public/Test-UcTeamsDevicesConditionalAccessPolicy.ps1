@@ -5,9 +5,9 @@ Validate which Conditional Access policies are supported by Microsoft Teams Andr
 .DESCRIPTION
 This function will validate each setting in a Conditional Access Policy to make sure they are in line with the supported settings:
 
-    https://docs.microsoft.com/microsoftteams/rooms/supported-ca-and-compliance-policies?tabs=phones#supported-device-compliance-policies
+    https://docs.microsoft.com/microsoftteams/rooms/supported-ca-and-compliance-policies?tabs=phones#conditional-access-policies"
 
-Authors: Traci Herr, David Paulino
+Contributors: Traci Herr, David Paulino
 
 Requirements: Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
 
@@ -96,7 +96,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                 $PolicyErrors++
             }
             
-            $SettingPSObj = New-Object –TypeName PSObject -Property @{
+            $SettingPSObj = New-Object -TypeName PSObject -Property @{
                 CAPolicyID         = $ConditionalAccessPolicy.id
                 CAPolicyName       = $ConditionalAccessPolicy.displayName
                 CAPolicyState      = $CAPolicyState
@@ -120,7 +120,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                     $Comment = $URLTeamsDevicesCA
                 }
 
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -136,7 +136,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             #Device
 
             if ($ConditionalAccessPolicy.conditions.devices) {
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -149,7 +149,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                 $output.Add($SettingPSObj) | Out-Null
             }
             else {
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -178,7 +178,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                     $Status = "Supported"
                 }
 
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -194,7 +194,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             
             if ($ConditionalAccessPolicy.GrantControls.CustomAuthenticationFactors) {
                 $PolicyWarnings++
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -209,7 +209,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
 
             if ($ConditionalAccessPolicy.GrantControls.TermsOfUse) {
                 $PolicyWarnings++
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -226,7 +226,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             $Comment = "" 
             if ($ConditionalAccessPolicy.SessionControls.ApplicationEnforcedRestrictions) {
                 $PolicyErrors++
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -240,7 +240,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             }
             if ($ConditionalAccessPolicy.SessionControls.CloudAppSecurity) {
                 $PolicyErrors++
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -254,7 +254,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             }
             if ($ConditionalAccessPolicy.SessionControls.SignInFrequency) {
                 $PolicyWarnings++
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
                     CAPolicyState      = $CAPolicyState
@@ -268,7 +268,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             }
             if ($ConditionalAccessPolicy.SessionControls.PersistentBrowser) {
                 $PolicyErrors++
-                $SettingPSObj = New-Object –TypeName PSObject -Property @{
+                $SettingPSObj = New-Object -TypeName PSObject -Property @{
                     CAPolicyID         = $ConditionalAccessPolicy.id
 
                     CAPolicyName       = $ConditionalAccessPolicy.displayName
@@ -292,7 +292,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                 $StatusSum = "Supported"
             }
 
-            $PolicySum = New-Object –TypeName PSObject -Property @{
+            $PolicySum = New-Object -TypeName PSObject -Property @{
                 CAPolicyID         = $ConditionalAccessPolicy.id
                 CAPolicyName       = $ConditionalAccessPolicy.DisplayName
                 CAPolicyState      = $CAPolicyState

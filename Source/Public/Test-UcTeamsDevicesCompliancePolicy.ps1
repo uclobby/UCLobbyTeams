@@ -7,7 +7,7 @@ This function will validate each setting in the Intune Compliance Policy to make
 
     https://docs.microsoft.com/en-us/microsoftteams/rooms/supported-ca-and-compliance-policies?tabs=phones#supported-device-compliance-policies
 
-Authors: Traci Herr, David Paulino
+Contributors: Traci Herr, David Paulino
 
 Requirements: Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
 

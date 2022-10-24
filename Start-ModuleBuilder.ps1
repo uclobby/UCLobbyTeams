@@ -1,5 +1,5 @@
 param(
-    [version]$Version = "0.2.0"
+    [version]$Version = "0.2.2"
 
 )
 #Requires -Module ModuleBuilder
@@ -13,3 +13,5 @@ $params = @{
 
 Build-Module @params -Verbose
 Import-Module -Name ($PSScriptRoot+"\Output\Uclobbyteams") -Verbose -Force
+
+

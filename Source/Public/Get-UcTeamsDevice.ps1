@@ -6,7 +6,7 @@ Get Microsoft Teams Devices information
 This function fetch Teams Devices provisioned in a M365 Tenant using MS Graph.
  
 
-Authors: David Paulino, Silvio Schanz
+Contributors: David Paulino, Silvio Schanz, Gonçalo Sepulveda and Bryan Kendrick
 
 Requirements:   Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
                 Microsoft Graph Scopes:
@@ -36,7 +36,7 @@ PS> Get-UcTeamsDevice
 PS> Get-UcTeamsDevice -Filter MTR
 
 .EXAMPLE
-PS> Get-UcTeamsDevice -DeviceId 00000-000000-00000-000000
+PS> Get-UcTeamsDevice -DeviceId 00000000-0000-0000-0000-000000000000
 
 .EXAMPLE
 PS> Get-UcTeamsDevice -Detailed
