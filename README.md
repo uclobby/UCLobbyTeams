@@ -30,16 +30,16 @@ Please use the PowerShell Gallery to install this module:
 <br/>Change Log:
 <br/>0.2.0 - 2022/10/20
 <ul>
-  <li>Get-UcTeamVersion
+  <li>Get-UcTeamsVersion
   <br/>Added Computer parameter to get Teams version on a remote machine.
   <br/>Added Path parameter to specify a path that contains Teams log files.</li>
   <li>Get-UcTeamsDevice
-  <br/>New cmdlet that get Microsoft Teams Devices information using MS Graph API.
+  <br/>New cmdlet that gets Microsoft Teams Devices information using MS Graph API.
   </li>
   <li>Test-UcTeamsDevicesConditionalAccessPolicy
-  <br/>New cmdlet that return that validates which Conditional Access policies are supported by Microsoft Teams Android Devices.</li>
+  <br/>New cmdlet that that validates which Conditional Access policies are supported by Microsoft Teams Android Devices.</li>
   <li>Test-UcTeamsDevicesCompliancePolicy
-  <br/>New cmdlet that return validates which Intune Compliance policies are supported by Microsoft Teams Android Devices.</li>
+  <br/>New cmdlet that validates which Intune Compliance policies are supported by Microsoft Teams Android Devices.</li>
 </ul>
 <br/>0.1.3 - 2022/06/10
 <ul>
