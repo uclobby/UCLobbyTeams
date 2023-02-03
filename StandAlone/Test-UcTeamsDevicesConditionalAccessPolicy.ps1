@@ -91,7 +91,7 @@ PS> Test-UcTeamsDevicesConditionalAccessPolicy -UserUPN
                 if($PSItem.Exception.Response.StatusCode -eq "NotFound"){
                     Write-warning -Message ("User Not Found: "+ $UserUPN)
                 }
-                exit
+                return
             }
         }
         #Using the PowerShell Module so simplify the request in case we have more than 100 groups.

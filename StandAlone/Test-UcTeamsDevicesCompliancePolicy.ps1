@@ -97,7 +97,7 @@ if ($connectedMSGraph) {
             if($PSItem.Exception.Response.StatusCode -eq "NotFound"){
                 Write-warning -Message ("User Not Found: "+ $UserUPN)
             }
-            exit
+            return
         }
         #We also need to take in consideration devices that are registered to this user
         $DeviceGroups = [System.Collections.ArrayList]::new()
@@ -122,7 +122,7 @@ if ($connectedMSGraph) {
             if($PSItem.Exception.Response.StatusCode -eq "BadRequest"){
                 Write-warning -Message ("Device ID Not Found: "+ $DeviceID)
             }
-            exit
+            return
         }
     }
 
