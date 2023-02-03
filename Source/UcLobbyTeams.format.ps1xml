@@ -181,9 +181,6 @@
         			<ListEntry>
           				<ListItems>
             				<ListItem>
-              					<PropertyName>DeviceID</PropertyName>
-            				</ListItem>
-            				<ListItem>
               					<PropertyName>DeviceType</PropertyName>
             				</ListItem>
 							<ListItem>
@@ -294,10 +291,7 @@
 					<TableColumnHeader>
 						<Label>Device Type</Label>
 					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Device ID</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
+ 					<TableColumnHeader>
 						<Label>User Display Name</Label>
 					</TableColumnHeader>
 					<TableColumnHeader>
@@ -314,9 +308,6 @@
 						<TableColumnItems>
 							<TableColumnItem>
 								<PropertyName>DeviceType</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>DeviceId</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>UserDisplayName</PropertyName>
@@ -346,83 +337,93 @@
 			<TableControl>
 				<TableHeaders>
 					<TableColumnHeader>
-						<Label>Conditional Access Policy Name</Label>
+						<Label>Conditional Access Policy   </Label>
 					</TableColumnHeader>
 					<TableColumnHeader>
 						<Label>Policy State</Label>
 					</TableColumnHeader>
-					<TableColumnHeader />
-					<TableColumnHeader />
+					<TableColumnHeader>
+						<Label>Assigned To</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Excluded From</Label>
+					</TableColumnHeader>
 					<TableColumnHeader>
 						<Label>Teams Device Status</Label>
 					</TableColumnHeader>
-					<TableColumnHeader />
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
 						<TableColumnItems>
 							<TableColumnItem>
-								<PropertyName>CAPolicyName</PropertyName>
+								<PropertyName>PolicyName</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>CAPolicyState</PropertyName>
+								<PropertyName>PolicyState</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Setting</PropertyName>
+								<PropertyName>AssignedToGroup</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Value</PropertyName>
+								<PropertyName>ExcludedFromGroup</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>TeamsDevicesStatus</PropertyName>
 							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Comment</PropertyName>
-							</TableColumnItem>														
 						</TableColumnItems>
 					</TableRowEntry>
 				</TableRowEntries>
 			</TableControl>
 		</View>
 		<View>
-			<Name>TeamsDeviceConditionalAccessPolicySummary</Name>
-			<ViewSelectedBy>
-				<TypeName>TeamsDeviceConditionalAccessPolicySummary</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<TableHeaders>
-					<TableColumnHeader>
-						<Label>Conditional Access Policy Name</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Policy ID</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Policy State</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Teams Device Status</Label>
-					</TableColumnHeader>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>CAPolicyName</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>CAPolicyID</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>CAPolicyState</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
+			<Name>TeamsDeviceConditionalAccessPolicyDetailed</Name>
+  			<ViewSelectedBy>
+    			<TypeName>TeamsDeviceConditionalAccessPolicyDetailed</TypeName>
+  			</ViewSelectedBy>
+			<ListControl>
+      			<ListEntries>
+        			<ListEntry>
+          				<ListItems>
+            				<ListItem>
+								<PropertyName>PolicyName</PropertyName>
+            				</ListItem>
+							<ListItem>
+								<PropertyName>PolicyID</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>PolicyState</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>AssignedToGroup</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>AssignedToGroupList</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ExcludedFromGroup</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ExcludedFromGroupList</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>TeamsDevicesStatus</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Setting</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SettingDescription</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Value</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Comment</PropertyName>
+							</ListItem>
+          				</ListItems>
+        			</ListEntry>
+      			</ListEntries>
+    		</ListControl>
 		</View>
 		<View>
 			<Name>TeamsDeviceCompliancePolicy</Name>
@@ -432,14 +433,20 @@
 			<TableControl>
 				<TableHeaders>
 					<TableColumnHeader>
-						<Label>Intune Compliance Policy Name</Label>
+						<Label>Compliance Policy Name</Label>
 					</TableColumnHeader>
-					<TableColumnHeader />
-					<TableColumnHeader />
+					<TableColumnHeader>
+						<Label>Compliance Policy Type</Label>
+					</TableColumnHeader>					
+					<TableColumnHeader>
+						<Label>Assign Group(s)</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Excluded Group(s)</Label>
+					</TableColumnHeader>
 					<TableColumnHeader>
 						<Label>Teams Device Status</Label>
 					</TableColumnHeader>
-					<TableColumnHeader />
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
@@ -448,50 +455,94 @@
 								<PropertyName>PolicyName</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Setting</PropertyName>
+								<PropertyName>PolicyType</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Value</PropertyName>
+								<PropertyName>AssignedToGroup</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>ExcludedFromGroup</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>TeamsDevicesStatus</PropertyName>
 							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Comment</PropertyName>
-							</TableColumnItem>														
 						</TableColumnItems>
 					</TableRowEntry>
 				</TableRowEntries>
 			</TableControl>
 		</View>
 		<View>
-			<Name>TeamsDeviceCompliancePolicySumary</Name>
+			<Name>TeamsDeviceCompliancePolicyDetailed</Name>
+  			<ViewSelectedBy>
+    			<TypeName>TeamsDeviceCompliancePolicyDetailed</TypeName>
+  			</ViewSelectedBy>
+			<ListControl>
+      			<ListEntries>
+        			<ListEntry>
+          				<ListItems>
+            				<ListItem>
+              					<PropertyName>PolicyName</PropertyName>
+            				</ListItem>
+							<ListItem>
+								<PropertyName>PolicyID</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>PolicyType</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>AssignedToGroup</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>AssignedToGroupList</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ExcludedFromGroup</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ExcludedFromGroupList</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TeamsDevicesStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Setting</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SettingDescription</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Value</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Comment</PropertyName>
+							</ListItem>
+          				</ListItems>
+        			</ListEntry>
+      			</ListEntries>
+    		</ListControl>
+		</View>
+		<View>
+			<Name>M365TenantId</Name>
 			<ViewSelectedBy>
-				<TypeName>TeamsDeviceCompliancePolicySumary</TypeName>
+				<TypeName>M365TenantId</TypeName>
 			</ViewSelectedBy>
 			<TableControl>
 				<TableHeaders>
 					<TableColumnHeader>
-						<Label>Intune Compliance Policy Name</Label>
+						<Label>Tenant ID</Label>
 					</TableColumnHeader>
 					<TableColumnHeader>
-						<Label>Policy ID</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Teams Device Status</Label>
-					</TableColumnHeader>
+						<Label>OnMicrosoft Domain</Label>
+					</TableColumnHeader>					
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
 						<TableColumnItems>
 							<TableColumnItem>
-								<PropertyName>PolicyName</PropertyName>
+								<PropertyName>TenantID</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>PolicyID</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>TeamsDevicesStatus</PropertyName>
+								<PropertyName>OnMicrosoftDomain</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>

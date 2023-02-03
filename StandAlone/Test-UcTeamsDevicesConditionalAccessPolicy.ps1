@@ -40,7 +40,6 @@ PS> Test-UcTeamsDevicesConditionalAccessPolicy -UserUPN
 
 #>
 
-Function Test-UcTeamsDevicesConditionalAccessPolicy {
     Param(
         [switch]$Detailed,
         [switch]$All,
@@ -690,7 +689,6 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             if($displayWarning){
                 Write-Warning "One or more policies contain unsupported settings, please use Test-UcTeamsDevicesConditionalAccessPolicy -Detailed to identify the unsupported settings."
             }
-            $outputSum | Sort-Object PolicyName
+            $outputSum | Sort-Object PolicyName | Format-Table PolicyName, PolicyState, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus
         }
     }
-}

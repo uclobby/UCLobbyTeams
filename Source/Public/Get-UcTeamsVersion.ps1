@@ -21,11 +21,16 @@ PS> Get-UcTeamsVersion -Path C:\Temp\
 .EXAMPLE
 PS> Get-UcTeamsVersion -Computer workstation124
 
+.EXAMPLE
+PS> $cred = Get-Credential
+PS> Get-UcTeamsVersion -Computer workstation124 -Credential $cred
+
 #>
 Function Get-UcTeamsVersion {
     Param(
         [string]$Path,
-        [string]$Computer
+        [string]$Computer,
+        [System.Management.Automation.PSCredential]$Credential
     )
     $regexVersion = '("version":")([0-9.]*)'
     $regexRing = '("ring":")(\w*)'
@@ -95,7 +100,7 @@ Function Get-UcTeamsVersion {
                     Region                  = $Region
                     Path                    = $TeamsSettingsFile.Directory.FullName
                 }
-                $TeamsVersion.PSObject.TypeNAmes.Insert(0, 'TeamsVersionFromPath')
+                $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersionFromPath')
                 $outTeamsVersion.Add($TeamsVersion) | Out-Null
             }
         } else {
@@ -105,11 +110,16 @@ Function Get-UcTeamsVersion {
     } else {
         $currentDateFormat = [cultureinfo]::CurrentCulture.DateTimeFormat.ShortDatePattern
         if($Computer) {
-            $RemotePath = "\\" + $Computer + "\C$\Users\"
+            $RemotePath = "\\" + $Computer + "\C$\Users"
+
+            if($Credential){
+                New-PSDrive -Root $RemotePath -Name ($Computer+"TmpTeamsVersion") -PSProvider FileSystem -Credential $Credential | Out-Null
+            }
+
             if(Test-Path -Path $RemotePath) {
                 $Profiles = Get-ChildItem -Path $RemotePath -ErrorAction SilentlyContinue
             } else {
-                Write-Error -Message ("Cannot get users on : " + $computer + " check if name is correct and permissions.")
+                Write-Error -Message ("Cannot get users on : " + $computer + " check if name is correct and if the current user has permissions.")
             }
         } else {
             $Profiles = Get-childItem 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList' | ForEach-Object { Get-ItemProperty $_.pspath } | Where-Object { $_.fullprofile -eq 1 }
@@ -167,9 +177,14 @@ Function Get-UcTeamsVersion {
                     Arch             = Get-UcArch $TeamsApp
                     InstallDate      = [Datetime]::ParseExact($InstallDateStr, 'M/d/yyyy', $null) | Get-Date -Format $currentDateFormat
                 }
-                $TeamsVersion.PSObject.TypeNAmes.Insert(0, 'TeamsVersion')
+                $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersion')
                 $outTeamsVersion.Add($TeamsVersion) | Out-Null
             }
+        }
+        if($Credential -and $Computer){
+            try{
+                Remove-PSDrive -Name ($Computer+"TmpTeamsVersion") -ErrorAction SilentlyContinue
+            } catch {}
         }
     }
     return $outTeamsVersion

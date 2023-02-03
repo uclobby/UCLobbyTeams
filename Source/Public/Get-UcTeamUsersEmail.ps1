@@ -71,7 +71,7 @@ Function Get-UcTeamUsersEmail {
                 Role            = $TeamMember.Role
                 Email           = $Email
             }
-            $Member.PSObject.TypeNAmes.Insert(0, 'TeamUsersEmail')
+            $Member.PSObject.TypeNames.Insert(0, 'TeamUsersEmail')
             $output.Add($Member) | Out-Null
         }
     }

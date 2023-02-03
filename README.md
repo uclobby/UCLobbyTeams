@@ -7,20 +7,20 @@ Please use the PowerShell Gallery to install this module:
 <br/>
 <br/>Available cmdlets:
 
-<br/>Get-UcTeamsVersion
-
+<br/>Get-UcM365Domains
 <br/>Get-UcM365TenantId 
 
-<br/>Get-UcTeamsForest
-<br/>Get-UcM365Domains
-<br/>Test-UcTeamsOnlyModeReadiness
-
-<br/>Get-UcTeamUsersEmail
-<br/>Get-UcTeamsWithSingleOwner
-
 <br/>Get-UcTeamsDevice
+<br/>Get-UcTeamsForest
+<br/>Get-UcTeamsVersion
+
+<br/>Get-UcTeamsWithSingleOwner
+<br/>Get-UcTeamUsersEmail
+
 <br/>Test-UcTeamsDevicesConditionalAccessPolicy
 <br/>Test-UcTeamsDevicesCompliancePolicy
+<br/>Test-UcTeamsOnlyModeReadiness
+
 
 <br/>Get-UcArch
 
@@ -28,6 +28,40 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
+<br/>0.2.3 - 2022/10/20
+<ul>
+  <li>Get-UcTeamsVersion
+  <br/>Added Credential parameter that will be used to connect to the remote computer.
+  </li>
+  <li>Get-UcTeamsDevice
+  <br/>Remove Device ID from parameters and output since that ID is the object in MS Graph and not the Device ID in Azure AD.
+  </li>
+  <li>Test-UcTeamsDevicesCompliancePolicy
+  <br/>Change in the default behavior, now without any switch only policies that are assigned to a group will be checked.
+  <br/>Output now includes which groups are included/excluded.
+  <br/>Display warning with the number of compliance policy skipped (Not associated with a group).
+  <br/>Added All switch to allow check policies even the policies without group assignment.
+  <br/>Added User UPN parameter to check Compliance policies applied to the specified user.
+  <br/>Added Device ID parameter to check Compliance policies applied to specific device.
+  <br/>Detailed switch will only output the unsupported settings.
+  <br/>Added IncludedSupported switch to show all checked policy settings for each policy.
+  <br/>Added Setting Description in the Detailed output to make it easier identify it in Microsoft Endpoint Manager admin center.
+  <br/>Added check for unsupported settings for MTR Windows (Windows Compliance Policy). 
+  </li>
+  <li>Test-UcTeamsDevicesConditionalAccessPolicy
+  <br/>Change in the default behavior, now without any switch only policies that are assigned to a group will be checked.
+  <br/>Output now includes which groups are included/excluded.
+  <br/>Display warning with the number of compliance policy skipped (Not associated with a group or Teams Application).
+  <br/>Added All switch to allow check policies even the policies without group assignment.
+  <br/>Added User UPN parameter to only check Conditional Access policies applied to the specified user.
+  <br/>Detailed switch will only output the unsupported settings.
+  <br/>Added IncludedSupported switch to show all checked policy settings for each policy.
+  <br/>Added Setting Description in the Detailed output to make it easier identify it in Microsoft Endpoint Manager admin center.
+  </li>
+  <li>Get-UcM365TenantId
+  <br/>The output will also include the OnMicrosoft.com Domain for that tenant.
+  </li>
+</ul>
 <br/>0.2.0 - 2022/10/20
 <ul>
   <li>Get-UcTeamsVersion
@@ -60,7 +94,7 @@ Please use the PowerShell Gallery to install this module:
   <br/>Add progress status.</li>
   </li>
   <li>Get-UcTeamsForest
-  <br/>New cmdlet that returns the Teams Forest, this is helpfull for Skype for Busines OnPrem to Teams migrations.</li>
+  <br/>New cmdlet that returns the Teams Forest, this is helpful for Skype for Business OnPrem to Teams migrations.</li>
 </ul>
 <br/>0.1.0 - 2022/03/25
 <ul>

@@ -109,7 +109,7 @@ Function Test-UcTeamsOnlyModeReadiness {
                 Domain           = $365Domain.Name
             }
         }
-        $Validation.PSObject.TypeNAmes.Insert(0, 'TeamsOnlyModeReadiness')
+        $Validation.PSObject.TypeNames.Insert(0, 'TeamsOnlyModeReadiness')
         $outTeamsOnly.Add($Validation) | Out-Null
     }
     return $outTeamsOnly

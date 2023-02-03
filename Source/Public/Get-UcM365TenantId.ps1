@@ -16,7 +16,9 @@ Function Get-UcM365TenantId {
         [Parameter(Mandatory = $true)]
         [string]$Domain
     )
-    $regex = "^(.*@)(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})$"
+    $regexTenantID = "^(.*@)(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})$"
+    $regexOnMicrosoftDomain = "^(.*@)(?!.*mail)(.*.onmicrosoft.com)$"
+
     try {
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
     }
@@ -31,11 +33,23 @@ Function Get-UcM365TenantId {
     catch {
         Write-Warning "Unknown error while checking domain: $Domain"
     }
-
+    $output = [System.Collections.ArrayList]::new()
+    $TenantID = ""
     foreach ($AllowedAudience in $AllowedAudiences) {
-        $temp = [regex]::Match($AllowedAudience , $regex).captures.groups
-        if ($temp.count -ge 2) {
-            return   New-Object -TypeName PSObject -Property @{ TenantID = $temp[2].value }
+        $tempTID = [regex]::Match($AllowedAudience , $regexTenantID).captures.groups
+        $tempID = [regex]::Match($AllowedAudience , $regexOnMicrosoftDomain).captures.groups
+        if ($tempTID.count -ge 2) {
+            $TenantID = $tempTID[2].value 
+        }
+        if ($tempID.count -ge 2) {
+            $OnMicrosoftDomain = $tempID[2].value
+        }
+        if($TenantID -and $OnMicrosoftDomain){
+            $M365TidPSObj = New-Object -TypeName PSObject -Property @{ TenantID = $TenantID
+                OnMicrosoftDomain = $OnMicrosoftDomain}
+            $M365TidPSObj.PSObject.TypeNames.Insert(0, 'M365TenantId')
+            [void]$output.Add($M365TidPSObj)
         }
     }
+    return $output
 }
