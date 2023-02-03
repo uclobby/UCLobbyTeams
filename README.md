@@ -28,7 +28,7 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
-<br/>0.2.3 - 2022/10/20
+<br/>0.2.3 - 2023/02/03
 <ul>
   <li>Get-UcTeamsVersion
   <br/>Added Credential parameter that will be used to connect to the remote computer.
