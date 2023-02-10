@@ -549,5 +549,45 @@
 				</TableRowEntries>
 			</TableControl>
 		</View>
+				<View>
+			<Name>UcConditionalAccessPolicy</Name>
+			<ViewSelectedBy>
+				<TypeName>UcConditionalAccessPolicy</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Conditional Access Policy</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Policy State</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Assigned To</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Excluded From</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>PolicyName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>PolicyState</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>AssignedToGroup</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>ExcludedFromGroup</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
 	</ViewDefinitions>
 </Configuration>

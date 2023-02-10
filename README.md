@@ -28,7 +28,17 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
-<br/>0.2.5 - 2022/02/03
+
+<br/>0.2.6 - 2023/02/10
+<ul>
+  <li>Get-UcM365TenantId
+  <br/>Added support for Multi Geo Tenants. 
+  </li>
+  <li>Test-UcTeamsDevicesConditionalAccessPolicy
+  <br/>Fixed missing CloudApps setting value.
+  </li>
+</ul>
+<br/>0.2.5 - 2023/02/03
 <ul>
   <li>Get-UcTeamsVersion
   <br/>Added Credential parameter that will be used to connect to the remote computer.

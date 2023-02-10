@@ -22,18 +22,19 @@ Function Get-UcM365TenantId {
     try {
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
     }
-    catch [System.Net.WebException] {
-        if ($PSItem.Exception.Message -eq "The remote server returned an error: (400) Bad Request.") {
-            Write-Warning "The domain $Domain is not part of a Microsoft 365 Tenant."
+    catch [System.Net.Http.HttpRequestException]{
+        if ($PSItem.Exception.Response.StatusCode -eq "BadRequest"){
+            Write-Error "The domain $Domain is not part of a Microsoft 365 Tenant."
         }
         else {
-            Write-Warning $PSItem.Exception.Message
+            Write-Error $PSItem.Exception.Message
         }
     }
     catch {
-        Write-Warning "Unknown error while checking domain: $Domain"
+        Write-Error "Unknown error while checking domain: $Domain"
     }
     $output = [System.Collections.ArrayList]::new()
+    $OnMicrosoftDomains = [System.Collections.ArrayList]::new()
     $TenantID = ""
     foreach ($AllowedAudience in $AllowedAudiences) {
         $tempTID = [regex]::Match($AllowedAudience , $regexTenantID).captures.groups
@@ -42,14 +43,17 @@ Function Get-UcM365TenantId {
             $TenantID = $tempTID[2].value 
         }
         if ($tempID.count -ge 2) {
-            $OnMicrosoftDomain = $tempID[2].value
+            [void]$OnMicrosoftDomains.Add($tempID[2].value)
         }
+    }
+    #Multi Geo will have multiple OnMicrosoft Domains
+    foreach($OnMicrosoftDomain in $OnMicrosoftDomains){
         if($TenantID -and $OnMicrosoftDomain){
-            $M365TidPSObj = New-Object -TypeName PSObject -Property @{ TenantID = $TenantID
+            $M365TidPSObj = [PSCustomObject]@{ TenantID = $TenantID
                 OnMicrosoftDomain = $OnMicrosoftDomain}
             $M365TidPSObj.PSObject.TypeNames.Insert(0, 'M365TenantId')
             [void]$output.Add($M365TidPSObj)
         }
     }
-    return $output
+    return $output 
 }

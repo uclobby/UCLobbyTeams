@@ -168,7 +168,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
 
             #If only assigned/excluded from a group we will show the group display name, otherwise the number of groups assigned/excluded.
             if(($AssignedToGroup.count -gt 0) -and ($AssignedToUserCount -gt 0)){
-                $outAssignedToGroup = "$AssignedToUserCount user(s), " + $AssignedToGroup.count + " group(s)"
+                $outAssignedToGroup = "$AssignedToUserCount user(s)," + $AssignedToGroup.count + " group(s)"
             } elseif(($AssignedToGroup.count -eq 0) -and ($AssignedToUserCount -gt 0)) {
                 $outAssignedToGroup = "$AssignedToUserCount user(s)"
             } elseif(($AssignedToGroup.count -gt 0) -and ($AssignedToUserCount -eq 0)){
@@ -204,20 +204,20 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             $hasSharePoint = $false
             $hasTeams = $false
             $hasOffice365 = $false
-            $CloudAppValue = ""
+            $SettingValue = ""
             foreach ($Application in $ConditionalAccessPolicy.Conditions.Applications.IncludeApplications) {
                 $appDisplayName = ($ServicePrincipals |  Where-Object -Property AppId -eq -Value $Application).DisplayName
                 switch ($Application) {
-                    "All" { $hasOffice365 = $true; $CloudAppValue = "All" }
-                    "Office365" { $hasOffice365 = $true; $CloudAppValue = "Office 365" }
-                    "00000002-0000-0ff1-ce00-000000000000" { $hasExchange = $true; $CloudAppValue += $appDisplayName + "; " }
-                    "00000003-0000-0ff1-ce00-000000000000" { $hasSharePoint = $true; $CloudAppValue += $appDisplayName + "; "}
-                    "cc15fd57-2c6c-4117-a88c-83b1d56b4bbe" { $hasTeams = $true; $CloudAppValue += $appDisplayName + "; " }
-                    default { $CloudAppValue += $appDisplayName + "; " }
+                    "All" { $hasOffice365 = $true; $SettingValue = "All" }
+                    "Office365" { $hasOffice365 = $true; $SettingValue = "Office 365" }
+                    "00000002-0000-0ff1-ce00-000000000000" { $hasExchange = $true; $SettingValue += $appDisplayName + "; " }
+                    "00000003-0000-0ff1-ce00-000000000000" { $hasSharePoint = $true; $SettingValue += $appDisplayName + "; "}
+                    "cc15fd57-2c6c-4117-a88c-83b1d56b4bbe" { $hasTeams = $true; $SettingValue += $appDisplayName + "; " }
+                    default { $SettingValue += $appDisplayName + "; " }
                 }
             }
-            if ($CloudAppValue.EndsWith("; ")) {
-                $CloudAppValue = $CloudAppValue.Substring(0, $CloudAppValue.Length - 2)
+            if ($SettingValue.EndsWith("; ")) {
+                $SettingValue = $SettingValue.Substring(0, $SettingValue.Length - 2)
             }
 
             if(((($AssignedToGroup.count -gt 0) -and ($hasOffice365 -or $hasTeams) -and ($PolicyState -NE "disabled")) -and (!$userExcluded) -and $userIncluded) -or $all){
@@ -311,35 +311,39 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                 $ID = 7
                 $Setting = "ClientAppTypes"
                 $SettingDescription = "Assignment > Conditions > Client apps"
+                $SettingValue = ""
                 $Comment = ""
                 foreach ($ClientAppType in $ConditionalAccessPolicy.Conditions.ClientAppTypes) {
                     if ($ClientAppType -eq "All") {
                         $Status = "Supported"
+                        $SettingValue = $ClientAppType
                         $Comment = ""
                     }
                     else {
                         $Status = "Unsupported"
+                        $SettingValue += $ClientAppType + ";"
                         $Comment = $URLTeamsDevicesCA
                         $PolicyErrors++
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName              = $ConditionalAccessPolicy.displayName
-                        PolicyState             = $PolicyState
-                        Setting                 = $Setting 
-                        Value                   = $SettingValue
-                        TeamsDevicesStatus      = $Status 
-                        Comment                 = $Comment
-                        SettingDescription      = $SettingDescription 
-                        AssignedToGroup         = $outAssignedToGroup
-                        ExcludedFromGroup       = $outExcludedFromGroup 
-                        AssignedToGroupList     = $AssignedToGroup
-                        ExcludedFromGroupList   = $ExcludedFromGroup
-                        PolicyID                = $ConditionalAccessPolicy.id
-                        ID                      = $ID
-                    }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
-                    [void]$output.Add($SettingPSObj)
+                    
                 }
+                $SettingPSObj = [PSCustomObject]@{
+                    PolicyName              = $ConditionalAccessPolicy.displayName
+                    PolicyState             = $PolicyState
+                    Setting                 = $Setting 
+                    Value                   = $SettingValue
+                    TeamsDevicesStatus      = $Status 
+                    Comment                 = $Comment
+                    SettingDescription      = $SettingDescription 
+                    AssignedToGroup         = $outAssignedToGroup
+                    ExcludedFromGroup       = $outExcludedFromGroup 
+                    AssignedToGroupList     = $AssignedToGroup
+                    ExcludedFromGroupList   = $ExcludedFromGroup
+                    PolicyID                = $ConditionalAccessPolicy.id
+                    ID                      = $ID
+                }
+                $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
+                [void]$output.Add($SettingPSObj)
                 #endregion
 
                 #region Assignment > Conditions > Filter for devices
