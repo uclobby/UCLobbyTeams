@@ -6,11 +6,14 @@ Get Microsoft Teams Desktop Version
 .DESCRIPTION
 This function returns the installed Microsoft Teams desktop version for each user profile.
 
-.PARAMETER $Path
+.PARAMETER Path
 Specify the path with Teams Log Files
 
-.PARAMETER $Computer
+.PARAMETER Computer
 Specify the remote computer
+
+.PARAMETER Credential
+Specify the credential to be used to connect to the remote computer
 
 .EXAMPLE
 PS> Get-UcTeamsVersion
@@ -43,10 +46,10 @@ Function Get-UcTeamsVersion {
 
     $outTeamsVersion = [System.Collections.ArrayList]::new()
 
-    if($Path){
+    if ($Path) {
         if (Test-Path $Path -ErrorAction SilentlyContinue) {
             $TeamsSettingsFiles = Get-ChildItem -Path $Path -Include "settings.json" -Recurse
-            foreach ($TeamsSettingsFile in $TeamsSettingsFiles){
+            foreach ($TeamsSettingsFile in $TeamsSettingsFiles) {
                 $TeamsSettings = Get-Content -Path $TeamsSettingsFile.FullName
                 $Version = ""
                 $Ring = ""
@@ -80,7 +83,7 @@ Function Get-UcTeamsVersion {
                 if (Test-Path $TeamsDesktopSettingsFile -ErrorAction SilentlyContinue) {
                     $TeamsDesktopSettings = Get-Content -Path $TeamsDesktopSettingsFile
                     $WindowsUser = ""
-                    $TeamsUserName =""
+                    $TeamsUserName = ""
                     $RegexTemp = [regex]::Match($TeamsDesktopSettings, $regexWindowsUser).captures.groups
                     if ($RegexTemp.Count -ge 2) {
                         $WindowsUser = $RegexTemp[2].value
@@ -91,47 +94,57 @@ Function Get-UcTeamsVersion {
                     }
                 }
                 $TeamsVersion = New-Object -TypeName PSObject -Property @{
-                    WindowsUser             = $WindowsUser
-                    TeamsUser               = $TeamsUserName
-                    Version                 = $Version
-                    Ring                    = $Ring
-                    Environment             = $Env
-                    CloudEnvironment        = $CloudEnv
-                    Region                  = $Region
-                    Path                    = $TeamsSettingsFile.Directory.FullName
+                    WindowsUser      = $WindowsUser
+                    TeamsUser        = $TeamsUserName
+                    Version          = $Version
+                    Ring             = $Ring
+                    Environment      = $Env
+                    CloudEnvironment = $CloudEnv
+                    Region           = $Region
+                    Path             = $TeamsSettingsFile.Directory.FullName
                 }
                 $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersionFromPath')
                 $outTeamsVersion.Add($TeamsVersion) | Out-Null
             }
-        } else {
+        }
+        else {
             Write-Error -Message ("Invalid Path, please check if path: " + $path + " is correct and exists.")
         }
-
-    } else {
+    }
+    else {
         $currentDateFormat = [cultureinfo]::CurrentCulture.DateTimeFormat.ShortDatePattern
-        if($Computer) {
+        if ($Computer) {
             $RemotePath = "\\" + $Computer + "\C$\Users"
-
-            if($Credential){
-                New-PSDrive -Root $RemotePath -Name ($Computer+"TmpTeamsVersion") -PSProvider FileSystem -Credential $Credential | Out-Null
+            $ComputerName = $Computer
+            if ($Credential) {
+                if ($Computer.IndexOf('.') -gt 0){
+                    $PSDriveName = $Computer.Substring(0,$Computer.IndexOf('.')) + "_TmpTeamsVersion"
+                } else {
+                    $PSDriveName = $Computer + "_TmpTeamsVersion"
+                }
+                New-PSDrive -Root $RemotePath -Name $PSDriveName -PSProvider FileSystem -Credential $Credential | Out-Null
             }
 
-            if(Test-Path -Path $RemotePath) {
+            if (Test-Path -Path $RemotePath) {
                 $Profiles = Get-ChildItem -Path $RemotePath -ErrorAction SilentlyContinue
-            } else {
-                Write-Error -Message ("Cannot get users on : " + $computer + " check if name is correct and if the current user has permissions.")
             }
-        } else {
+            else {
+                Write-Error -Message ("Error: Cannot get users on " + $computer + ", please check if name is correct and if the current user has permissions.")
+            }
+        }
+        else {
+            $ComputerName = $Env:COMPUTERNAME
             $Profiles = Get-childItem 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList' | ForEach-Object { Get-ItemProperty $_.pspath } | Where-Object { $_.fullprofile -eq 1 }
         }
         
         foreach ($UserProfile in $Profiles) {
-            if($Computer){
+            if ($Computer) {
                 $ProfilePath = $UserProfile.FullName
                 $ProfileName = $UserProfile.Name
-            } else {
+            }
+            else {
                 $ProfilePath = $UserProfile.ProfileImagePath
-                $ProfileName  = (New-Object System.Security.Principal.SecurityIdentifier($UserProfile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
+                $ProfileName = (New-Object System.Security.Principal.SecurityIdentifier($UserProfile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
             }
             $TeamsSettingPath = $ProfilePath + "\AppData\Roaming\Microsoft\Teams\settings.json"
             if (Test-Path $TeamsSettingPath -ErrorAction SilentlyContinue) {
@@ -166,7 +179,9 @@ Function Get-UcTeamsVersion {
                 catch { }
                 $TeamsApp = $ProfilePath + "\AppData\Local\Microsoft\Teams\current\Teams.exe"
                 $InstallDateStr = Get-Content ($ProfilePath + "\AppData\Roaming\Microsoft\Teams\installTime.txt")
+                
                 $TeamsVersion = New-Object -TypeName PSObject -Property @{
+                    Computer         = $ComputerName
                     Profile          = $ProfileName
                     ProfilePath      = $ProfilePath
                     Version          = $Version
@@ -181,10 +196,11 @@ Function Get-UcTeamsVersion {
                 $outTeamsVersion.Add($TeamsVersion) | Out-Null
             }
         }
-        if($Credential -and $Computer){
-            try{
-                Remove-PSDrive -Name ($Computer+"TmpTeamsVersion") -ErrorAction SilentlyContinue
-            } catch {}
+        if ($Credential -and $PSDriveName) {
+            try {
+                Remove-PSDrive -Name $PSDriveName -ErrorAction SilentlyContinue
+            }
+            catch {}
         }
     }
     return $outTeamsVersion

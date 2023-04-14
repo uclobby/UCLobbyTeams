@@ -8,6 +8,7 @@
 			</ViewSelectedBy>
 			<TableControl>
 				<TableHeaders>
+					<TableColumnHeader />
 					<TableColumnHeader>
 						<Label>Windows Profile</Label>
 					</TableColumnHeader>
@@ -26,6 +27,9 @@
 				<TableRowEntries>
 					<TableRowEntry>
 						<TableColumnItems>
+						<TableColumnItem>
+							<PropertyName>Computer</PropertyName>
+							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Profile</PropertyName>
 							</TableColumnItem>
@@ -180,9 +184,18 @@
       			<ListEntries>
         			<ListEntry>
           				<ListItems>
+							<ListItem>
+              					<PropertyName>TACDeviceID</PropertyName>
+            				</ListItem>
             				<ListItem>
               					<PropertyName>DeviceType</PropertyName>
             				</ListItem>
+							<ListItem>
+								<PropertyName>Manufacturer</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Model</PropertyName>
+							</ListItem>
 							<ListItem>
 								<PropertyName>UserDisplayName</PropertyName>
 							</ListItem>
@@ -194,12 +207,6 @@
 							</ListItem>
 							<ListItem>
 								<PropertyName>CompanyAssetTag</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>Manufacturer</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>Model</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SerialNumber</PropertyName>
@@ -217,6 +224,27 @@
 								<PropertyName>ChangedByUser</PropertyName>
 							</ListItem>
 							<ListItem>
+								<PropertyName>ActivePeripherals</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>HdmiIngestStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ComputeStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>RoomCameraStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SpeakerStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>CommunicationSpeakerStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>MicrophoneStatus</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>DisplayConfiguration</PropertyName>
 							</ListItem>
 							<ListItem>
@@ -232,13 +260,13 @@
 								<PropertyName>TeamsClientConfiguration</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>HardwareConfiguration</PropertyName>
+								<PropertyName>SupportedMeetingMode</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>HardwareProcessor</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SystemConfiguration</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>LastUpdate</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>TeamsAdminAgentVersion</PropertyName>
@@ -256,8 +284,9 @@
 								<PropertyName>TeamsAppVersion</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>ActivePeripherals</PropertyName>
+								<PropertyName>LastUpdate</PropertyName>
 							</ListItem>
+
 							<ListItem>
 								<PropertyName>LastHistoryAction</PropertyName>
 							</ListItem>
@@ -549,7 +578,7 @@
 				</TableRowEntries>
 			</TableControl>
 		</View>
-				<View>
+		<View>
 			<Name>UcConditionalAccessPolicy</Name>
 			<ViewSelectedBy>
 				<TypeName>UcConditionalAccessPolicy</TypeName>

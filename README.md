@@ -13,14 +13,16 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcTeamsDevice
 <br/>Get-UcTeamsForest
 <br/>Get-UcTeamsVersion
+<br/>Get-UcTeamsVersionBatch
 
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
 
+<br/>Get-UcConditionalAccessPolicy
+
 <br/>Test-UcTeamsDevicesConditionalAccessPolicy
 <br/>Test-UcTeamsDevicesCompliancePolicy
 <br/>Test-UcTeamsOnlyModeReadiness
-
 
 <br/>Get-UcArch
 
@@ -29,6 +31,20 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.2.7 - 2023/04/13
+<ul>
+  <li>General
+  <br/>Change: We need to connect to Microsoft Graph before using any cmdlet in the module. In the previous versions a connection was attempted, we remove this since in some scenarios we might want to use different authentication methods or environment.
+  </li>
+  <li>Get-UcTeamsDevice
+  <br/>Fix: An exception could be raised if the User was null.
+  <br/>Fix: Cycle all pages in MS Graph Response 
+  <br/>Feature: Ability to export to CSV with a new parameter -ExportCSV
+  </li>
+  <li>Get-UcTeamsVersionBatch
+  <br />New cmdlet: This allows to get the teams version from a list of computers from a CSV file. 
+  </li>
+</ul>
 <br/>0.2.6 - 2023/02/10
 <ul>
   <li>Get-UcM365TenantId
