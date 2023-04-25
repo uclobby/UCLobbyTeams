@@ -31,6 +31,27 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.3.1 - 2023/04/25
+<ul>
+<li>General
+  <br/>Change: Added a check, in all cmdlets, if there is a newer version of module available (Test-UcModuleUpdateAvailable).
+</li>
+<li>Update-UcTeamsDevice
+  <br/>New cmdlet: Allow to send update commands to Teams Android Devices using MS Graph.
+</li>
+<li>Test-UcModuleUpdateAvailable
+  <br/>New cmdlet: Check if a PowerShell module has a new update in PowerShell Gallery and if it's installed.
+</li>
+<li>Test-UcTeamsDevicesConditionalAccessPolicy
+  <br/>Fix: In some cases the number of groups was too large, so now we only get the display name for the groups included/excluded.
+  <br/>Feature: Ability to export to CSV with a new parameter -ExportCSV
+</li>
+<li>Test-UcTeamsDevicesCompliancePolicy
+  <br/>Fix: In some cases the number of groups was too large, so now we only get the display name for the groups included/excluded.
+  <br/>Feature: Ability to export to CSV with a new parameter -ExportCSV
+</li>
+</ul>
+
 <br/>0.2.7 - 2023/04/13
 <ul>
   <li>General
