@@ -35,6 +35,7 @@ Function Get-UcTeamsVersionBatch {
         [switch]$ExportCSV,
         [System.Management.Automation.PSCredential]$Credential
     )
+    Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
     if (Test-Path $InputCSV) {
         try{
             $Computers = Import-Csv -Path $InputCSV

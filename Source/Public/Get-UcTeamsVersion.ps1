@@ -45,6 +45,7 @@ Function Get-UcTeamsVersion {
     $regexTeamsUserName = '("userName":")([a-zA-Z0-9@._-]*)'
 
     $outTeamsVersion = [System.Collections.ArrayList]::new()
+    Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
 
     if ($Path) {
         if (Test-Path $Path -ErrorAction SilentlyContinue) {

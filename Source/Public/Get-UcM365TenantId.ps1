@@ -20,6 +20,7 @@ Function Get-UcM365TenantId {
     $regexOnMicrosoftDomain = "^(.*@)(?!.*mail)(.*.onmicrosoft.com)$"
 
     try {
+        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
     }
     catch [System.Net.Http.HttpRequestException]{

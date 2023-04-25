@@ -32,6 +32,12 @@ Specifies a UserUPN that we want to check for applied compliance policies
 .PARAMETER DeviceID
 Specifies DeviceID that we want to check for applied compliance policies
 
+.PARAMETER ExportCSV
+When present will export the detailed results to a CSV file. By defautl will save the file under the current user downloads, unless we specify the OutputPath.
+
+.PARAMETER OutputPath
+Allows to specify the path where we want to save the results.
+
 .EXAMPLE 
 PS> Test-UcTeamsDevicesCompliancePolicy
 
@@ -47,7 +53,9 @@ Function Test-UcTeamsDevicesCompliancePolicy {
         [string]$PolicyID,
         [string]$PolicyName,
         [string]$UserUPN,
-        [string]$DeviceID
+        [string]$DeviceID,
+        [switch]$ExportCSV,
+        [string]$OutputPath
     )
 
     $connectedMSGraph = $false
@@ -57,6 +65,7 @@ Function Test-UcTeamsDevicesCompliancePolicy {
 
     $GraphURI_CompliancePolicies = "https://graph.microsoft.com/beta/deviceManagement/deviceCompliancePolicies/"
     $GraphURI_Users = "https://graph.microsoft.com/v1.0/users"
+    $GraphURI_Groups = "https://graph.microsoft.com/v1.0/groups"
     $GraphURI_Devices = "https://graph.microsoft.com/v1.0/devices"
 
     $SupportedAndroidCompliancePolicies = "#microsoft.graph.androidCompliancePolicy", "#microsoft.graph.androidDeviceOwnerCompliancePolicy", "#microsoft.graph.aospDeviceOwnerCompliancePolicy"
@@ -66,8 +75,21 @@ Function Test-UcTeamsDevicesCompliancePolicy {
     $URLSupportedCompliancePoliciesWindows = "https://aka.ms/TeamsDevicePolicies?tabs=mtr-w#supported-device-compliance-policies"
 
     if (Test-UcMgGraphConnection -Scopes "DeviceManagementConfiguration.Read.All", "Directory.Read.All") {
+        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        $outFileName = "TeamsDevices_CompliancePolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
+        if ($OutputPath) {
+            if (!(Test-Path $OutputPath -PathType Container)) {
+                Write-Host ("Error: Invalid folder " + $OutputPath) -ForegroundColor Red
+                return
+            } 
+            $OutputFullPath = [System.IO.Path]::Combine($OutputPath, $outFileName)
+        }
+        else {                
+            $OutputFullPath = [System.IO.Path]::Combine($env:USERPROFILE, "Downloads", $outFileName)
+        }
 
         try {
+            Write-Progress -Activity "Test-UcTeamsDeviceCompliancePolicy" -Status "Getting Compliance Policies"
             $CompliancePolicies = (Invoke-MgGraphRequest -Uri $GraphURI_CompliancePolicies -Method GET).value
             $connectedMSGraph = $true
         }
@@ -124,10 +146,14 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                 }
             }
 
-            $Groups = Get-MgGroup -Select Id, DisplayName -All
+            $Groups = New-Object 'System.Collections.Generic.Dictionary[string, string]'
+            $p=0
+            $policyCount = $CompliancePolicies.Count
             foreach ($CompliancePolicy in $CompliancePolicies) {
+                $p++
+                Write-Progress -Activity "Test-UcTeamsDeviceCompliancePolicy" -Status ("Checking policy " + $CompliancePolicy.displayName + " - $p of $policyCount")
                 if ((($PolicyID -eq $CompliancePolicy.id) -or ($PolicyName -eq $CompliancePolicy.displayName) -or (!$PolicyID -and !$PolicyName)) -and (($CompliancePolicy."@odata.type" -in $SupportedAndroidCompliancePolicies) -or ($CompliancePolicy."@odata.type" -in $SupportedWindowsCompliancePolicies))) {
-
+                    
                     #We need to check if the policy has assignments (Groups/All Users/All Devices)
                     $CompliancePolicyAssignments = (Invoke-MgGraphRequest -Uri ($GraphURI_CompliancePolicies + $CompliancePolicy.id + "/assignments" ) -Method GET).value
                     $AssignedToGroup = [System.Collections.ArrayList]::new()
@@ -153,9 +179,22 @@ Function Test-UcTeamsDevicesCompliancePolicy {
 
                     #Checking Compliance Policy assigments since we can skip non assigned policies.
                     foreach ($CompliancePolicyAssignment in $CompliancePolicyAssignments) {
+                        $GroupDisplayName = $CompliancePolicyAssignment.target.Groupid
+                        if ($Groups.ContainsKey($CompliancePolicyAssignment.target.Groupid)) {
+                            $GroupDisplayName = $Groups.Item($CompliancePolicyAssignment.target.Groupid)
+                        }
+                        else {
+                            try {
+                                $GroupInfo = Invoke-MgGraphRequest -Uri ($GraphURI_Groups + "/" + $CompliancePolicyAssignment.target.Groupid + "/?`$select=id,displayname") -Method GET
+                                $Groups.Add($GroupInfo.id, $GroupInfo.displayname)
+                                $GroupDisplayName = $GroupInfo.displayname
+                            }
+                            catch {
+                            }
+                        }
                         $GroupEntry = New-Object -TypeName PSObject -Property @{
                             GroupID          = $CompliancePolicyAssignment.target.Groupid
-                            GroupDisplayName = ($Groups | Where-Object -Property id -EQ -Value $CompliancePolicyAssignment.target.Groupid).displayName
+                            GroupDisplayName = $GroupDisplayName
                         }
                         switch ($CompliancePolicyAssignment.target."@odata.type") {
                             #Policy assigned to all users
@@ -979,14 +1018,28 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                 }
             }
             if ($IncludeSupported -and $Detailed) {
-                $output | Sort-Object PolicyName, ID
+                if ($ExportCSV) {
+                    $output | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyType, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                    Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
+                    return
+                }
+                else {
+                    $output | Sort-Object PolicyName, ID
+                }
             }
             elseif ($Detailed) {
                 if ((( $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported").count -eq 0) -and !$IncludeSupported) {
                     Write-Warning "No unsupported settings found, please use Test-UcTeamsDevicesCompliancePolicy -IncludeSupported to output all settings."
                 }
                 else {
-                    $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID
+                    if ($ExportCSV) {
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyType, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                        Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
+                        return
+                    }
+                    else {
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID
+                    }
                 }
             }
             else {

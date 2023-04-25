@@ -43,8 +43,6 @@ PS> Get-UcTeamsDevice -Detailed
 
 #>
 
-$GraphURI_BetaAPIBatch = "https://graph.microsoft.com/beta/`$batch"
-
 Function Get-UcTeamsDevice {
     Param(
         [ValidateSet("Phone","MTR","MTRA","MTRW","SurfaceHub","Display","Panel","SIPPhone")]
@@ -54,9 +52,6 @@ Function Get-UcTeamsDevice {
         [string]$OutputPath
     )    
     $outTeamsDevices = [System.Collections.ArrayList]::new()
-    $TeamsDeviceList =  [System.Collections.ArrayList]::new()
-    $graphRequestsExtra =  [System.Collections.ArrayList]::new()
-    $graphResponseExtra =  [System.Collections.ArrayList]::new()
 
     if($ExportCSV){
         $Detailed = $true
@@ -73,6 +68,7 @@ Function Get-UcTeamsDevice {
     }
 
     if(Test-UcMgGraphConnection -Scopes "TeamworkDevice.Read.All", "User.Read.All"){
+        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         $graphRequests =  [System.Collections.ArrayList]::new()
         $tmpFileName = "MSTeamsDevices_" + $Filter + "_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
         switch ($filter) {
@@ -175,39 +171,18 @@ Function Get-UcTeamsDevice {
             }
         }
         
-        #TO DO: Look for alternatives instead of doing this.
-        if($graphRequests.Count -gt 1){
-            $graphBody = ' { "requests":  '+ ($graphRequests | ConvertTo-Json) + ' }' 
-        } else {
-            $graphBody = ' { "requests": ['+ ($graphRequests | ConvertTo-Json) + '] }' 
-        }
-        
-        $tmpGraphResponses = (Invoke-MgGraphRequest -Method Post -Uri $GraphURI_BetaAPIBatch -Body $graphBody).responses
-        for($j=0;$j -lt $tmpGraphResponses.length; $j++){
-            if($tmpGraphResponses[$j].status -eq 200){  
-                $TeamsDeviceList += $tmpGraphResponses[$j].body.value
-                #Checking if there are more pages available
-                $GraphURI_NextPage = $tmpGraphResponses[$j].body.'@odata.nextLink'
-                while(![string]::IsNullOrEmpty($GraphURI_NextPage)){
-                    $graphNextPageResponse =  Invoke-MgGraphRequest -Method Get -Uri $GraphURI_NextPage
-                    $TeamsDeviceList  += $graphNextPageResponse.value
-                    $GraphURI_NextPage = $graphNextPageResponse.'@odata.nextLink'
-                }
-            }
-        }
-        
+        $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcTeamsDevice, getting Teams device info").body.value
+
         #To improve performance we will use batch requests
-        $i = 1
+        $graphRequests =  [System.Collections.ArrayList]::new()
         foreach($TeamsDevice in $TeamsDeviceList){
-            $batchCount = [int](($TeamsDeviceList.length * 5)/20)+1
-            Write-Progress -Activity "Teams Device List" -Status "Running batch $i of $batchCount"  -PercentComplete (($i / $batchCount) * 100)
-            if(($graphRequestsExtra.id -notcontains $TeamsDevice.currentuser.id) -and !([string]::IsNullOrEmpty($TeamsDevice.currentuser.id)) -and ($graphResponseExtra.id -notcontains $TeamsDevice.currentuser.id)) {
+            if(($graphRequests.id -notcontains $TeamsDevice.currentuser.id) -and !([string]::IsNullOrEmpty($TeamsDevice.currentuser.id))) {
                 $gRequestTmp = New-Object -TypeName PSObject -Property @{
                     id =  $TeamsDevice.currentuser.id
                     method = "GET"
                     url = "/users/"+ $TeamsDevice.currentuser.id
                 }
-                $graphRequestsExtra.Add($gRequestTmp) | Out-Null
+                $graphRequests.Add($gRequestTmp) | Out-Null
             }
             if($Detailed){
                 $gRequestTmp = New-Object -TypeName PSObject -Property @{
@@ -215,43 +190,35 @@ Function Get-UcTeamsDevice {
                     method = "GET"
                     url = "/teamwork/devices/"+$TeamsDevice.id+"/activity"
                 }
-                $graphRequestsExtra.Add($gRequestTmp) | Out-Null
+                $graphRequests.Add($gRequestTmp) | Out-Null
                 $gRequestTmp = New-Object -TypeName PSObject -Property @{
                     id = $TeamsDevice.id+"-configuration"
                     method = "GET"
                     url = "/teamwork/devices/"+$TeamsDevice.id+"/configuration"
                 }
-                $graphRequestsExtra.Add($gRequestTmp) | Out-Null
+                $graphRequests.Add($gRequestTmp) | Out-Null
                 $gRequestTmp = New-Object -TypeName PSObject -Property @{
                     id =$TeamsDevice.id+"-health"
                     method = "GET"
                     url = "/teamwork/devices/"+$TeamsDevice.id+"/health"
                 }
-                $graphRequestsExtra.Add($gRequestTmp) | Out-Null
+                $graphRequests.Add($gRequestTmp) | Out-Null
                 $gRequestTmp = New-Object -TypeName PSObject -Property @{
                     id = $TeamsDevice.id+"-operations"
                     method = "GET"
                     url = "/teamwork/devices/"+$TeamsDevice.id+"/operations"
                 }
-                $graphRequestsExtra.Add($gRequestTmp) | Out-Null
+                $graphRequests.Add($gRequestTmp) | Out-Null
             } 
-
-            #MS Graph is limited to 20 requests per batch, each device has 5 requests unless we already know the User UPN.
-            if($graphRequestsExtra.Count -gt 15)  {
-                $i++
-                $graphBodyExtra = ' { "requests":  '+ ($graphRequestsExtra  | ConvertTo-Json) + ' }' 
-                $graphResponseExtra += (Invoke-MgGraphRequest -Method Post -Uri $GraphURI_BetaAPIBatch -Body $graphBodyExtra).responses
-                $graphRequestsExtra =  [System.Collections.ArrayList]::new()
-            }
         }
-        if ($graphRequestsExtra.Count -gt 0){
-            Write-Progress -Activity "Teams Device List" -Status "Running batch $i of $batchCount"  -PercentComplete (($i / $batchCount) * 100)
-            if($graphRequestsExtra.Count -gt 1){
-                $graphBodyExtra = ' { "requests":  '+ ($graphRequestsExtra | ConvertTo-Json) + ' }' 
+        if ($graphRequests.Count -gt 0){
+            
+            if($Detailed){
+                $ActivityInfo = "Get-UcTeamsDevice, getting Teams device addtional information (User UPN/Health/Operations/Configurarion)."
             } else {
-                $graphBodyExtra = ' { "requests": ['+ ($graphRequestsExtra | ConvertTo-Json) + '] }' 
+                $ActivityInfo = "Get-UcTeamsDevice, getting Teams device user information."
             }
-            $graphResponseExtra += (Invoke-MgGraphRequest -Method Post -Uri $GraphURI_BetaAPIBatch -Body $graphBodyExtra).responses
+            $graphResponseExtra = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity $ActivityInfo)
         }
         
         foreach($TeamsDevice in $TeamsDeviceList){

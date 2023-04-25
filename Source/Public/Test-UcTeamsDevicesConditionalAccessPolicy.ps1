@@ -23,6 +23,12 @@ Displays results for all settings in each  Conditional Access Policy
 .PARAMETER UserUPN
 Specifies a UserUPN that we want to check for applied Conditional Access policies
 
+.PARAMETER ExportCSV
+When present will export the detailed results to a CSV file. By defautl will save the file under the current user downloads, unless we specify the OutputPath.
+
+.PARAMETER OutputPath
+Allows to specify the path where we want to save the results.
+
 .EXAMPLE 
 PS> Test-UcTeamsDevicesConditionalAccessPolicy
 
@@ -45,10 +51,13 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
         [switch]$Detailed,
         [switch]$All,
         [switch]$IncludeSupported,
-        [string]$UserUPN
+        [string]$UserUPN,
+        [switch]$ExportCSV,
+        [string]$OutputPath
     )
 
     $GraphURI_Users = "https://graph.microsoft.com/v1.0/users"
+    $GraphURI_Groups = "https://graph.microsoft.com/v1.0/groups"
     $GraphURI_ConditionalAccess = "https://graph.microsoft.com/beta/identity/conditionalAccess/policies"
 
     $connectedMSGraph = $false
@@ -60,7 +69,21 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
     $URLTeamsDevicesKnownIssues = "https://docs.microsoft.com/microsoftteams/troubleshoot/teams-rooms-and-devices/rooms-known-issues#teams-phone-devices"
 
     if (Test-UcMgGraphConnection -Scopes "Policy.Read.All", "Directory.Read.All") {
+        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        $outFileName = "TeamsDevices_ConditionalAccessPolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
+
+        if ($OutputPath) {
+            if (!(Test-Path $OutputPath -PathType Container)) {
+                Write-Host ("Error: Invalid folder " + $OutputPath) -ForegroundColor Red
+                return
+            } 
+            $OutputFullPath = [System.IO.Path]::Combine($OutputPath, $outFileName)
+        }
+        else {                
+            $OutputFullPath = [System.IO.Path]::Combine($env:USERPROFILE, "Downloads", $outFileName)
+        }
         try {
+            Write-Progress -Activity "Test-UcTeamsDevicesConditionalAccessPolicy" -Status "Getting Conditional Access Policies"
             $ConditionalAccessPolicies = (Invoke-MgGraphRequest -Uri ($GraphURI_ConditionalAccess + $GraphFilter) -Method GET).Value
             $connectedMSGraph = $true
         }
@@ -92,10 +115,18 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                     return
                 }
             }
-            #Using the PowerShell Module so simplify the request in case we have more than 100 groups.
-            $Groups = Get-MgGroup -Select Id, DisplayName -All
+
+            $Groups = New-Object 'System.Collections.Generic.Dictionary[string, string]'
+            try{
+            Write-Progress -Activity "Test-UcTeamsDevicesConditionalAccessPolicy" -Status "Fetching Service Principals details."
             $ServicePrincipals = Get-MgServicePrincipal -Select AppId, DisplayName -All
+            } catch {}
+
+            $p=0
+            $policyCount = $ConditionalAccessPolicies.Count
             foreach ($ConditionalAccessPolicy in $ConditionalAccessPolicies) {
+                $p++
+                Write-Progress -Activity "Test-UcTeamsDevicesConditionalAccessPolicy" -Status ("Checking policy " +  $ConditionalAccessPolicy.displayName + " - $p of $policyCount")
                 $AssignedToGroup = [System.Collections.ArrayList]::new()
                 $ExcludedFromGroup = [System.Collections.ArrayList]::new()
                 $AssignedToUserCount = 0
@@ -138,9 +169,22 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                     }
                 }
                 foreach ($includedGroup in $ConditionalAccessPolicy.conditions.users.includeGroups) {
+                    $GroupDisplayName = $includedGroup
+                    if ($Groups.ContainsKey($includedGroup)) {
+                        $GroupDisplayName = $Groups.Item($includedGroup)
+                    }
+                    else {
+                        try {
+                            $GroupInfo = Invoke-MgGraphRequest -Uri ($GraphURI_Groups + "/" + $includedGroup + "/?`$select=id,displayname") -Method GET
+                            $Groups.Add($GroupInfo.id, $GroupInfo.displayname)
+                            $GroupDisplayName = $GroupInfo.displayname
+                        }
+                        catch {
+                        }
+                    }
                     $GroupEntry = New-Object -TypeName PSObject -Property @{
                         GroupID          = $includedGroup
-                        GroupDisplayName = ($Groups | Where-Object -Property Id -EQ -Value $includedGroup).displayName
+                        GroupDisplayName = $GroupDisplayName
                     }
                     #We only need to add if we didn't specify a UPN or if the user is part of the group that has the CA assigned.
                     if (!$UserUPN) {
@@ -154,9 +198,21 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
 
             
                 foreach ($excludedGroup in $ConditionalAccessPolicy.conditions.users.excludeGroups) {
+                    $GroupDisplayName = $excludedGroup
+                    if ($Groups.ContainsKey($excludedGroup)) {
+                        $GroupDisplayName = $Groups.Item($excludedGroup)
+                    }
+                    else {
+                        try {
+                            $GroupInfo = Invoke-MgGraphRequest -Uri ($GraphURI_Groups + "/" + $excludedGroup + "/?`$select=id,displayname") -Method GET
+                            $Groups.Add($GroupInfo.id, $GroupInfo.displayname)
+                            $GroupDisplayName = $GroupInfo.displayname
+                        }
+                        catch { }
+                    }
                     $GroupEntry = New-Object -TypeName PSObject -Property @{
                         GroupID          = $excludedGroup
-                        GroupDisplayName = ($Groups | Where-Object -Property id -EQ -Value $excludedGroup).displayName
+                        GroupDisplayName = $GroupDisplayName
                     }
                     $ExcludedFromGroup.Add($GroupEntry) | Out-Null                
                     if ($excludedGroup -in $UserGroups) {
@@ -711,14 +767,27 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             }
         
             if ($IncludeSupported -and $Detailed) {
-                $output | Sort-Object PolicyName, ID
+                if ($ExportCSV) {
+                    $output | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyState, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                    Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
+                    return
+                }
+                else {
+                    $output | Sort-Object PolicyName, ID
+                }
             }
             elseif ($Detailed) {
                 if ((( $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported").count -eq 0) -and !$IncludeSupported) {
                     Write-Warning "No unsupported settings found, please use Test-UcTeamsDevicesConditionalAccessPolicy -IncludeSupported, to output all settings."
                 }
                 else {
-                    $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID
+                    if ($ExportCSV) {
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyState, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                        Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
+                    }
+                    else {    
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID
+                    }
                 }
             }
             else {

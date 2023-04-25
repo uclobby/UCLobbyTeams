@@ -26,11 +26,13 @@ Function Test-UcTeamsOnlyModeReadiness {
     }
     else {
         try {
+            Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
             $365Domains = Get-CsOnlineSipDomain
             $connectedMSTeams = $true
         }
         catch {
-            Write-Error "Please Connect to before running this cmdlet with Connect-MicrosoftTeams"
+            Write-Host "Error: Please Connect to before running this cmdlet with Connect-MicrosoftTeams" -ForegroundColor Red
+            return
         }
     }
     $DomainCount = ($365Domains.Count)

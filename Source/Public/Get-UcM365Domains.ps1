@@ -19,6 +19,7 @@ Function Get-UcM365Domains {
     $regex = "^(.*@)(.*[.].*)$"
     $outDomains = [System.Collections.ArrayList]::new()
     try {
+        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
         foreach ($AllowedAudience in $AllowedAudiences) {
             $temp = [regex]::Match($AllowedAudience , $regex).captures.groups

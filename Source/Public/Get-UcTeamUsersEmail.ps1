@@ -27,13 +27,12 @@ PS> Get-UcTeamUsersEmail -TeamName "Marketing" -Role "Guest"
 Function Get-UcTeamUsersEmail {
     [cmdletbinding(SupportsShouldProcess)]
     Param(
-        [Parameter(Mandatory = $false)]
         [string]$TeamName,
-        [Parameter(Mandatory = $false)]
         [ValidateSet("Owner", "User", "Guest")] 
         [string]$Role
     )
     $output = [System.Collections.ArrayList]::new()
+    Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
     if ($TeamName) {
         $Teams = Get-Team -DisplayName $TeamName
     }
