@@ -1,5 +1,5 @@
 param(
-    [version]$Version = "0.3.1"
+    [version]$Version = "0.3.2"
 
 )
 #Requires -Module ModuleBuilder
@@ -11,7 +11,7 @@ $params = @{
     UnversionedOutputDirectory = $true
 }
 
-Build-Module @params -Verbose
-Import-Module -Name ($PSScriptRoot+"\Output\Uclobbyteams") -Verbose -Force
+Build-Module @params
+Import-Module -Name ($PSScriptRoot+"\Output\Uclobbyteams") -Force
 
 

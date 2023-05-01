@@ -61,7 +61,7 @@ Function Get-UcTeamsVersionBatch {
         foreach ($computer in $Computers) {
             $c++
             Write-Progress -Activity ("Getting Teams Version from: " + $computer.Computer)  -Status "Computer $c of $compCount "
-            $tmpTV = Get-UcTeamsVersion -Computer $computer.Computer -Credential $cred
+            $tmpTV = Get-UcTeamsVersion -Computer $computer.Computer -Credential $cred -SkipModuleCheck
             $outTeamsVersion.Add($tmpTV) | Out-Null
         }
         if ($ExportCSV) {

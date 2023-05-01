@@ -33,7 +33,8 @@ Function Get-UcTeamsVersion {
     Param(
         [string]$Path,
         [string]$Computer,
-        [System.Management.Automation.PSCredential]$Credential
+        [System.Management.Automation.PSCredential]$Credential,
+        [switch]$SkipModuleCheck
     )
     $regexVersion = '("version":")([0-9.]*)'
     $regexRing = '("ring":")(\w*)'
@@ -45,7 +46,9 @@ Function Get-UcTeamsVersion {
     $regexTeamsUserName = '("userName":")([a-zA-Z0-9@._-]*)'
 
     $outTeamsVersion = [System.Collections.ArrayList]::new()
-    Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+    if(!$SkipModuleCheck){
+        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+    }
 
     if ($Path) {
         if (Test-Path $Path -ErrorAction SilentlyContinue) {

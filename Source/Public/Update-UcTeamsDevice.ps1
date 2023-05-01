@@ -57,23 +57,13 @@ Function Update-UcTeamsDevice {
     [cmdletbinding(SupportsShouldProcess)]
     Param(
         [ValidateSet("Firmware", "TeamsApp", "All")]
-        [Parameter(ParameterSetName='Filter')]
         [string]$UpdateType = "All",
-        [Parameter(ParameterSetName='Filter')]
         [ValidateSet("Phone", "MTRA", "Display", "Panel")]
         [string]$DeviceType,
-        [Parameter(ParameterSetName='Filter')]
         [string]$DeviceID,
-        [Parameter(ParameterSetName='Filter')]
-        [Parameter(ParameterSetName='CSVFilter',Mandatory=$true)]
         [string]$InputCSV,
-        [Parameter(ParameterSetName='CSVFilter',Mandatory=$false)]
         [string]$Subnet,
-        [Parameter(ParameterSetName='Filter')]
-        [Parameter(ParameterSetName='CSVFilter')]
         [string]$OutputPath,
-        [Parameter(ParameterSetName='Filter')]
-        [Parameter(ParameterSetName='CSVFilter')]
         [switch]$ReportOnly
     )
     $regExIPAddressSubnet = "^((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9]))\/(3[0-2]|[1-2]{1}[0-9]{1}|[1-9])$"
@@ -119,7 +109,7 @@ Function Update-UcTeamsDevice {
                 url    = "/teamwork/devices/" + $DeviceID
             }
             [void]$graphRequests.Add($gRequestTmp)
-            $GraphResponse = Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device info"
+            $GraphResponse = Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device info" -IncludeBody
             
             if ($GraphResponse.status -eq 200) {
                 $TeamsDeviceList = $GraphResponse.body
@@ -154,7 +144,7 @@ Function Update-UcTeamsDevice {
                     }
                 }
                 if ($graphRequests.Count -gt 0) {
-                    $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device info").body
+                    $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device info" )
                 } 
             }
             else {
@@ -250,7 +240,7 @@ Function Update-UcTeamsDevice {
                 }
             }
             #Using new cmdlet to get a list of devices
-            $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device info").body.value
+            $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device info").value
         }
 
         $devicesWithUpdatePending = 0
@@ -267,7 +257,7 @@ Function Update-UcTeamsDevice {
             }
         }
         if ($graphRequests.Count -gt 0) {
-            $graphResponseExtra = Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device health info"
+            $graphResponseExtra = Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, getting device health info" -IncludeBody
         }
 
         #In case we detect more than 5 devices with updates pending we will request confirmation that we can continue.
@@ -337,7 +327,7 @@ Function Update-UcTeamsDevice {
             }
         }
         if ($graphRequests.Count -gt 0) {
-            $updateGraphResponse = Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, sending update commands"
+            $updateGraphResponse = Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Update-UcTeamsDevices, sending update commands" -IncludeBody
         }
 
         foreach ($TeamsDevice in $TeamsDeviceList) {

@@ -171,7 +171,7 @@ Function Get-UcTeamsDevice {
             }
         }
         
-        $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcTeamsDevice, getting Teams device info").body.value
+        $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcTeamsDevice, getting Teams device info").value
 
         #To improve performance we will use batch requests
         $graphRequests =  [System.Collections.ArrayList]::new()
@@ -218,7 +218,7 @@ Function Get-UcTeamsDevice {
             } else {
                 $ActivityInfo = "Get-UcTeamsDevice, getting Teams device user information."
             }
-            $graphResponseExtra = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity $ActivityInfo)
+            $graphResponseExtra = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity $ActivityInfo -IncludeBody)
         }
         
         foreach($TeamsDevice in $TeamsDeviceList){

@@ -11,7 +11,7 @@ Function Test-UcModuleUpdateAvailable {
         }
         
         #Get the lastest version available
-        $availableVersion = (Find-Module -Name $ModuleName -Repository PSGallery).Version
+        $availableVersion = (Find-Module -Name $ModuleName -Repository PSGallery -ErrorAction SilentlyContinue).Version
         #Get all installed versions
         $installedVersions = (get-module $ModuleName -ListAvailable).Version
 

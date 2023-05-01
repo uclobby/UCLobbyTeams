@@ -3,7 +3,8 @@ Function Invoke-UcMgGraphBatch {
         [object]$Requests,
         [ValidateSet("beta", "v1.0")]
         [string]$MgProfile,
-        [string]$Activity
+        [string]$Activity,
+        [switch]$IncludeBody
     )
     $GraphURI_BetaAPIBatch = "https://graph.microsoft.com/beta/`$batch"
     $GraphURI_ProdAPIBatch = "https://graph.microsoft.com/v1.0/`$batch"
@@ -16,9 +17,15 @@ Function Invoke-UcMgGraphBatch {
     else {
         $GraphURI_Batch = $GraphURI_ProdAPIBatch
     }
+
+    #If activity is null then we can use this to get the function that call this function.
+    if (!($Activity)) {
+        $Activity = (c)[1].FunctionName
+    }
+
     $g = 1
     $batchCount = [int][Math]::Ceiling(($Requests.count / 20))
-    foreach($GraphRequest in $Requests){
+    foreach ($GraphRequest in $Requests) {
         Write-Progress -Activity $Activity -Status "Running batch $g of $batchCount"
         [void]$tmpGraphRequests.Add($GraphRequest) 
         if ($tmpGraphRequests.Count -ge 20) {
@@ -40,15 +47,19 @@ Function Invoke-UcMgGraphBatch {
         }
         $GraphResponses += (Invoke-MgGraphRequest -Method Post -Uri $GraphURI_Batch -Body $grapRequestBody).responses
     }
-
     for ($j = 0; $j -lt $GraphResponses.length; $j++) {
-        $outBatchResponses += $GraphResponses[$j]
-        #Checking if there are more pages available
-        $GraphURI_NextPage = $GraphResponses[$j].body.'@odata.nextLink'
-        while (![string]::IsNullOrEmpty($GraphURI_NextPage)) {
-            $graphNextPageResponse = Invoke-MgGraphRequest -Method Get -Uri $GraphURI_NextPage
-            $outBatchResponses += $graphNextPageResponse
-            $GraphURI_NextPage = $graphNextPageResponse.'@odata.nextLink'
+        #In some cases we will need the complete graph response, in that case the calling function will have to process pending pages.
+        if($IncludeBody){
+            $outBatchResponses += $GraphResponses[$j]
+        } else {
+            $outBatchResponses += $GraphResponses[$j].body
+             #Checking if there are more pages available    
+            $GraphURI_NextPage = $GraphResponses[$j].body.'@odata.nextLink'
+            while (![string]::IsNullOrEmpty($GraphURI_NextPage)) {
+                $graphNextPageResponse = Invoke-MgGraphRequest -Method Get -Uri $GraphURI_NextPage
+                $outBatchResponses += $graphNextPageResponse
+                $GraphURI_NextPage = $graphNextPageResponse.'@odata.nextLink'
+            } 
         }
     }
     return $outBatchResponses

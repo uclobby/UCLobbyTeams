@@ -15,6 +15,8 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcTeamsVersion
 <br/>Get-UcTeamsVersionBatch
 
+<br>Update-UcTeamsDevice
+
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
 
@@ -25,12 +27,22 @@ Please use the PowerShell Gallery to install this module:
 <br/>Test-UcTeamsOnlyModeReadiness
 
 <br/>Get-UcArch
+<br/>Test-UcModuleUpdateAvailable
 
 <br/>More info:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
 
+<br/>0.3.2 - 2023/05/01
+<ul>
+<li>Get-UcTeamsDevice
+<br/>Fix: Issue where only the first MS graph page from a request was returned.
+</li>
+<li>Update-UcTeamsDevice
+<br/>Fix: Issue where only the first MS graph page from a request was returned.
+</li>
+</ul>
 <br/>0.3.1 - 2023/04/25
 <ul>
 <li>General
@@ -51,7 +63,6 @@ Please use the PowerShell Gallery to install this module:
   <br/>Feature: Ability to export to CSV with a new parameter -ExportCSV
 </li>
 </ul>
-
 <br/>0.2.7 - 2023/04/13
 <ul>
   <li>General
