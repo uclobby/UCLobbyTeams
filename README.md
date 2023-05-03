@@ -34,6 +34,12 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.3.3 - 2023
+<ul>
+<li>Test-UcTeamsDevicesConditionalAccessPolicy
+<br/>Fix: Detailed output was showing deviceFilter for GrantControl settings.
+</li>
+</ul>
 <br/>0.3.2 - 2023/05/01
 <ul>
 <li>Get-UcTeamsDevice
