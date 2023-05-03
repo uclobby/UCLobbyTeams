@@ -425,7 +425,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
-                    #region Assignment > Conditions > Filter for devices
+                    #region 8: Assignment > Conditions > Filter for devices
                     $ID = 8
                     $Setting = "deviceFilter"
                     $SettingDescription = "Assignment > Conditions > Filter for devices"
@@ -459,6 +459,7 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
                     #endregion
 
                     #region 10: Access controls > Grant
+                    $Setting = "GrantControls"
                     foreach ($BuiltInControl in $ConditionalAccessPolicy.GrantControls.BuiltInControls) {
                         $Comment = "" 
                         $SettingValue = "Enabled"
