@@ -34,7 +34,15 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
-<br/>0.3.3 - 2023
+<br/>0.3.4 - 2023/05/18
+<ul>
+<li>Update-UcTeamsDevice
+<br/>Fix:ReportOnly was not showing when a device had an update pending.
+<br/>Change:Added last update sent to the device in the ouput
+<br/>Change:Added User UPN and Display Name for the user signed in on the device.
+</li>
+</ul>
+<br/>0.3.3 - 2023/05/03
 <ul>
 <li>Test-UcTeamsDevicesConditionalAccessPolicy
 <br/>Fix: Detailed output was showing deviceFilter for GrantControl settings.
