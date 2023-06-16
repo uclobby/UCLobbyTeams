@@ -34,6 +34,17 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.3.5 - 2023/06/16
+<ul>
+<li>Invoke-UcMgGraphBatch
+<br/>Change: Added retry if a batch page fails.
+</li>
+</ul>
+<ul>
+<li>Update-UcTeamsDevice
+<br/>Fix: In some scenarios we could get a null pointer exception.
+</li>
+</ul>
 <br/>0.3.4 - 2023/05/18
 <ul>
 <li>Update-UcTeamsDevice
