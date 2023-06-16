@@ -9,7 +9,7 @@ Contributors: Eileen Beato, David Paulino and Bryan Kendrick
 
 Requirements:   Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
                 Microsoft Graph Scopes:
-                        "TeamworkDevice.ReadWrite.All"
+                        "TeamworkDevice.ReadWrite.All","User.Read.All"
 .PARAMETER DeviceID
 Specify the Teams Admin Center Device ID that we want to update.
 
@@ -68,7 +68,7 @@ Function Update-UcTeamsDevice {
     )
     $regExIPAddressSubnet = "^((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9]))\/(3[0-2]|[1-2]{1}[0-9]{1}|[1-9])$"
 
-    if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.ReadWrite.All") {
+    if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.ReadWrite.All","User.Read.All") {
         $outTeamsDevices = [System.Collections.ArrayList]::new()
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         #Checking if the Subnet is valid
@@ -279,7 +279,7 @@ Function Update-UcTeamsDevice {
         }
 
         #In case we detect more than 5 devices with updates pending we will request confirmation that we can continue.
-        if (($devicesWithUpdatePending -gt 5) -and !$ReportOnly) {
+        if (($devicesWithUpdatePending -ge 5) -and !$ReportOnly) {
             if ($ConfirmPreference) {
                 $title = 'Confirm'
                 $question = "There are " + $devicesWithUpdatePending + " Teams Devices pending update. Are you sure that you want to continue?"
@@ -302,7 +302,7 @@ Function Update-UcTeamsDevice {
                 #Currently we only consider Firmware and TeamsApp(teamsClient)
                 
                 #Firmware
-                if ($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType.Equals("All") -or $UpdateType.Equals("Firmware"))) {
+                if ($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All","Firmware"))) {
                     if (!($ReportOnly)) {
 
                         $requestHeader = New-Object 'System.Collections.Generic.Dictionary[string, string]'
@@ -323,7 +323,7 @@ Function Update-UcTeamsDevice {
                 }
                 
                 #TeamsApp
-                if ($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType.Equals("All") -or $UpdateType.Equals("TeamsApp"))) {
+                if ($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All","Firmware"))) {
                     if (!($ReportOnly)) {
                         $requestHeader = New-Object 'System.Collections.Generic.Dictionary[string, string]'
                         $requestHeader.Add("Content-Type", "application/json")
@@ -354,11 +354,11 @@ Function Update-UcTeamsDevice {
                 if ($ReportOnly) {
                     $UpdateStatus = "Report Only:"
                     $pendingUpdate = $false
-                    if ($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType.Equals("All") -or $UpdateType.Equals("Firmware"))) {
+                    if ($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All","Firmware"))) {
                         $UpdateStatus += " Firmware Update Pending;"
                         $pendingUpdate = $true
                     }
-                    if ($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType.Equals("All") -or $UpdateType.Equals("TeamsApp"))) {
+                    if ($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All","Firmware"))) {
                         $UpdateStatus += " Teams App Update Pending;"
                         $pendingUpdate = $true
                     }

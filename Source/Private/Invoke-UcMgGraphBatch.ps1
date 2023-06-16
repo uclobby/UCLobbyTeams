@@ -45,10 +45,18 @@ Function Invoke-UcMgGraphBatch {
         else {
             $grapRequestBody = ' { "requests": [' + ($tmpGraphRequests | ConvertTo-Json) + '] }' 
         }
+        try{
         $GraphResponses += (Invoke-MgGraphRequest -Method Post -Uri $GraphURI_Batch -Body $grapRequestBody).responses
+        } catch
+        {
+            Write-Warning "Error while getting the Graph Request."
+        }
     }
+    
+    #In some cases we will need the complete graph response, in that case the calling function will have to process pending pages.
+    $attempts = 1
     for ($j = 0; $j -lt $GraphResponses.length; $j++) {
-        #In some cases we will need the complete graph response, in that case the calling function will have to process pending pages.
+       
         if($IncludeBody){
             $outBatchResponses += $GraphResponses[$j]
         } else {
@@ -56,9 +64,18 @@ Function Invoke-UcMgGraphBatch {
              #Checking if there are more pages available    
             $GraphURI_NextPage = $GraphResponses[$j].body.'@odata.nextLink'
             while (![string]::IsNullOrEmpty($GraphURI_NextPage)) {
-                $graphNextPageResponse = Invoke-MgGraphRequest -Method Get -Uri $GraphURI_NextPage
-                $outBatchResponses += $graphNextPageResponse
-                $GraphURI_NextPage = $graphNextPageResponse.'@odata.nextLink'
+                try{
+                    $graphNextPageResponse = Invoke-MgGraphRequest -Method Get -Uri $GraphURI_NextPage
+                    $outBatchResponses += $graphNextPageResponse
+                    $GraphURI_NextPage = $graphNextPageResponse.'@odata.nextLink'
+                } catch {
+                    Write-Warning "Failed to get the next batch page, retrying..."
+                    $attempts--
+                }
+                if($attempts -eq 0){
+                    Write-Warning "Could not get next batch page, skiping it."
+                    break
+                }
             } 
         }
     }
