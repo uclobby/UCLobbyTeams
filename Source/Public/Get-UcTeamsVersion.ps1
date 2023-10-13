@@ -148,8 +148,14 @@ Function Get-UcTeamsVersion {
             }
             else {
                 $ProfilePath = $UserProfile.ProfileImagePath
-                $ProfileName = (New-Object System.Security.Principal.SecurityIdentifier($UserProfile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
+                #20232013 Added exception handeling, only known case is when a windows profile was created when the machine was joined to a previous domain.
+                try{
+                    $ProfileName = (New-Object System.Security.Principal.SecurityIdentifier($UserProfile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
+                } catch {
+                    $ProfileName = "Unknown Windows User"
+                }
             }
+            #region classic teams
             $TeamsSettingPath = $ProfilePath + "\AppData\Roaming\Microsoft\Teams\settings.json"
             if (Test-Path $TeamsSettingPath -ErrorAction SilentlyContinue) {
                 $TeamsSettings = Get-Content -Path $TeamsSettingPath
@@ -197,8 +203,12 @@ Function Get-UcTeamsVersion {
                     InstallDate      = [Datetime]::ParseExact($InstallDateStr, 'M/d/yyyy', $null) | Get-Date -Format $currentDateFormat
                 }
                 $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersion')
-                $outTeamsVersion.Add($TeamsVersion) | Out-Null
+                [void]$outTeamsVersion.Add($TeamsVersion)
             }
+            #endregion
+            #region new teams
+            
+            #endregion
         }
         if ($Credential -and $PSDriveName) {
             try {

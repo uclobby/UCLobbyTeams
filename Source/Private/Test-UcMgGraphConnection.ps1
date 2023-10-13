@@ -19,7 +19,8 @@ PS> Connect-UcMgGraph "TeamworkDevice.Read.All","Directory.Read.All"
 
 function Test-UcMgGraphConnection {
     Param(
-    [string[]]$Scopes
+    [string[]]$Scopes,
+    [string[]]$AltScopes
     )
     #Checking if Microsoft.Graph is installed
     if(!(Get-Module Microsoft.Graph.Authentication -ListAvailable)){
@@ -28,13 +29,29 @@ function Test-UcMgGraphConnection {
     }
     #Checking if we have the required scopes.
     $currentScopes = (Get-MgContext).Scopes
+ 
     $strScope =""
-    $missingScope = $false
+    $missingScopes = ""
+    $missingScope = $false    
     foreach($scope in $Scopes){
         $strScope += "`"" + $scope + "`","
         if(($scope -notin $currentScopes) -and $currentScopes){
             $missingScope = $true
-            Write-Warning -Message ("Missing Scope in Microsoft Graph: " + $scope) 
+            $missingScopes += $scope + ","
+        }
+    }
+
+    #20231013 - Added option to specify alternative scopes
+    if(!($missingScope)){
+        $strAltScope =""
+        $missingAltScopes = ""
+        $missingAltScope = $false
+        foreach($altScope in $AltScopes){
+            $strAltScope += "`"" + $altScope + "`","
+            if(($altScope -notin $currentScopes) -and $currentScopes){
+                $missingAltScope = $true
+                $missingAltScopes += $altScope + ","
+            }
         }
     }
 
@@ -44,8 +61,18 @@ function Test-UcMgGraphConnection {
     }
 
     #If scopes are missing we need to connect using the required scopes
-    if($missingScope){
-        Write-Warning  ("Some scopes are missing please reconnect to Microsoft Graph before running this cmdlet." + [Environment]::NewLine +"Commercial Tenant: Connect-MgGraph -Scopes " + $strScope.Substring(0,$strScope.Length -1) + [Environment]::NewLine  + "US Gov (GCC-H) Tenant: Connect-MgGraph -Scopes " + $strScope.Substring(0,$strScope.Length -1)  + " -Environment USGov")
+    if($missingScope -and $missingAltScope){
+        if($Scopes -and $AltScopes){
+            Write-Warning  ("Missing scope(s): " + $missingScopes.Substring(0,$missingScopes.Length -1) + " and missing alternative Scope(s): " + $missingAltScopes.Substring(0,$missingAltScopes.Length -1) + `
+            [Environment]::NewLine + "Please reconnect to Microsoft Graph before running this cmdlet." + `
+            [Environment]::NewLine + "Commercial Tenant: Connect-MgGraph -Scopes " + $strScope.Substring(0,$strScope.Length -1) + " or Connect-MgGraph -Scopes " + $strAltScope.Substring(0,$strAltScope.Length -1)  + `
+            [Environment]::NewLine  + "US Gov (GCC-H) Tenant: Connect-MgGraph -Environment USGov -Scopes " + $strScope.Substring(0,$strScope.Length -1)  + " or  Connect-MgGraph -Environment USGov -Scopes " + $strAltScope.Substring(0,$strAltScope.Length -1) )
+        } else {
+            Write-Warning  ("Missing scope(s): " + $missingScopes.Substring(0,$missingScopes.Length -1) + `
+            [Environment]::NewLine + "Please reconnect to Microsoft Graph before running this cmdlet." + `
+            [Environment]::NewLine +"Commercial Tenant: Connect-MgGraph -Scopes " + $strScope.Substring(0,$strScope.Length -1) + `
+            [Environment]::NewLine  + "US Gov (GCC-H) Tenant: Connect-MgGraph -Environment USGov -Scopes " + $strScope.Substring(0,$strScope.Length -1))
+        }
         return $false
     } else {
         return $true

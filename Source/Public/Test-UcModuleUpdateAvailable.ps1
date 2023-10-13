@@ -20,7 +20,7 @@ Function Test-UcModuleUpdateAvailable {
                 Write-Warning ("The lastest available version of $ModuleName module is installed, however version $currentVersion is imported." + [Environment]::NewLine + "Please make sure you import it with: Import-Module $ModuleName -RequiredVersion $availableVersion")
             }
             else {
-                Write-Warning ("There is a new version available ($availableVersion), please update the module with: Update-Module $ModuleName")
+                Write-Warning ("There is a new version available $availableVersion, current version $currentVersion, please update the module with: Update-Module $ModuleName")
             }
         }
     }

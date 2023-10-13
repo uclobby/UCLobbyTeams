@@ -19,7 +19,7 @@ Function Get-UcTeamsForest {
     $regex = "^.*[redirect].*(webdir)(\w*)(.online.lync.com).*$"
     try {
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
-        $WebRequest = Invoke-WebRequest -Uri ("https://webdir.online.lync.com/AutoDiscover/AutoDiscoverservice.svc/root?originalDomain=" + $Domain)
+        $WebRequest = Invoke-WebRequest -Uri ("https://webdir.online.lync.com/AutoDiscover/AutoDiscoverservice.svc/root?originalDomain=" + $Domain) -UseBasicParsing
         $temp = [regex]::Match($WebRequest, $regex).captures.groups
         $result = New-Object -TypeName PSObject -Property @{
                 

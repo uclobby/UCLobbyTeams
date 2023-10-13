@@ -145,7 +145,7 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                     return
                 }
             }
-
+            #TO DO: We should only get display names from assigned groups
             $Groups = New-Object 'System.Collections.Generic.Dictionary[string, string]'
             $p=0
             $policyCount = $CompliancePolicies.Count

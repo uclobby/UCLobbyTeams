@@ -21,7 +21,7 @@ Function Get-UcM365TenantId {
 
     try {
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
-        $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
+        $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
     }
     catch [System.Net.Http.HttpRequestException]{
         if ($PSItem.Exception.Response.StatusCode -eq "BadRequest"){

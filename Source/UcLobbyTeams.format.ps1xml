@@ -592,10 +592,10 @@
 						<Label>Policy State</Label>
 					</TableColumnHeader>
 					<TableColumnHeader>
-						<Label>Assigned To</Label>
+						<Label>Assign Group(s)</Label>
 					</TableColumnHeader>
 					<TableColumnHeader>
-						<Label>Excluded From</Label>
+						<Label>Excluded Group(s)</Label>
 					</TableColumnHeader>
 				</TableHeaders>
 				<TableRowEntries>
@@ -612,6 +612,46 @@
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>ExcludedFromGroup</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<View>
+			<Name>TeamsDeviceEnrollmentPolicy</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsDeviceEnrollmentPolicy</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Enrollment Policy</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Priority</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Assign Group(s)</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Teams Device Status</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>PolicyName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>PolicyPriority</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>AssignedToGroup</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>TeamsDevicesStatus</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>

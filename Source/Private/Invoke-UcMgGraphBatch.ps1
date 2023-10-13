@@ -56,18 +56,22 @@ Function Invoke-UcMgGraphBatch {
     #In some cases we will need the complete graph response, in that case the calling function will have to process pending pages.
     $attempts = 1
     for ($j = 0; $j -lt $GraphResponses.length; $j++) {
-       
+        $ResponseCount = 0
         if($IncludeBody){
             $outBatchResponses += $GraphResponses[$j]
         } else {
             $outBatchResponses += $GraphResponses[$j].body
              #Checking if there are more pages available    
             $GraphURI_NextPage = $GraphResponses[$j].body.'@odata.nextLink'
+            $GraphTotalCount = $GraphResponses[$j].body.'@odata.count'
+            $ResponseCount += $GraphResponses[$j].body.value.count
             while (![string]::IsNullOrEmpty($GraphURI_NextPage)) {
                 try{
                     $graphNextPageResponse = Invoke-MgGraphRequest -Method Get -Uri $GraphURI_NextPage
                     $outBatchResponses += $graphNextPageResponse
                     $GraphURI_NextPage = $graphNextPageResponse.'@odata.nextLink'
+                    $ResponseCount += $graphNextPageResponse.value.count
+                    Write-Progress -Activity $Activity -Status "$ResponseCount of $GraphTotalCount"
                 } catch {
                     Write-Warning "Failed to get the next batch page, retrying..."
                     $attempts--

@@ -49,7 +49,7 @@ Function Test-UcTeamsOnlyModeReadiness {
         # 20220522 - Skipping if the domain is not SIP Enabled.
         if (!($connectedMSTeams)) {
             try {
-                Invoke-WebRequest -Uri ("https://webdir.online.lync.com/AutoDiscover/AutoDiscoverservice.svc/root?originalDomain=" + $tmpDomain) | Out-Null
+                Invoke-WebRequest -Uri ("https://webdir.online.lync.com/AutoDiscover/AutoDiscoverservice.svc/root?originalDomain=" + $tmpDomain) -UseBasicParsing | Out-Null
                 $enabledSIP = $true
             }
             catch {

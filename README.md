@@ -3,28 +3,29 @@
 Please use the PowerShell Gallery to install this module:
 <br/>
 <br/>PowerShell Gallery – UcLobbyTeams
-<br/> https://www.powershellgallery.com/packages/UcLobbyTeams/
+<br/>https://www.powershellgallery.com/packages/UcLobbyTeams/
 <br/>
 <br/>Available cmdlets:
 
 <br/>Get-UcM365Domains
 <br/>Get-UcM365TenantId 
-
-<br/>Get-UcTeamsDevice
+<br/>Get-UcM365LicenseAssignment
 <br/>Get-UcTeamsForest
-<br/>Get-UcTeamsVersion
-<br/>Get-UcTeamsVersionBatch
-
-<br>Update-UcTeamsDevice
 
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
+<br/>Test-UcTeamsOnlyModeReadiness
 
-<br/>Get-UcConditionalAccessPolicy
+<br/>Get-UcTeamsVersion
+<br/>Get-UcTeamsVersionBatch
+
+<br/>Get-UcTeamsDevice
+<br>Update-UcTeamsDevice
 
 <br/>Test-UcTeamsDevicesConditionalAccessPolicy
+<br/>Test-UcTeamsDevicesEnrollmentPolicy
 <br/>Test-UcTeamsDevicesCompliancePolicy
-<br/>Test-UcTeamsOnlyModeReadiness
+
 
 <br/>Get-UcArch
 <br/>Test-UcModuleUpdateAvailable
@@ -34,12 +35,22 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
-<br/>0.3.5 - 2023/06/16
+<br/>0.4.0 - 2023/10/13
 <ul>
-<li>Invoke-UcMgGraphBatch
-<br/>Change: Added retry if a batch page fails.
+<li>Get-UcM365Domains, Get-UcM365TenantId, Get-UcTeamsForest, Test-UcTeamsOnlyModeReadiness
+<br/>Fix: Added switch UseBasicParsing to Invoke-WebRequest
+</li>
+<li>Get-UcTeamsVersion
+<br/>Fix: Exception handling for windows profiles that were created when the machine was joined to an another domain.
+</li>
+<li>Get-UcM365LicenseAssignment
+  <br/>New cmdlet: Generate a report of the User assigned licenses either direct or assigned by group (Inherited)
+</li>
+<li>Test-UcTeamsDevicesEnrollmentPolicy
+  <br/>New cmdlet: Validate Intune Enrolment Policies that are supported by Microsoft Teams Android Devices
 </li>
 </ul>
+<br/>0.3.5 - 2023/06/16
 <ul>
 <li>Update-UcTeamsDevice
 <br/>Fix: In some scenarios we could get a null pointer exception.
@@ -48,9 +59,9 @@ Please use the PowerShell Gallery to install this module:
 <br/>0.3.4 - 2023/05/18
 <ul>
 <li>Update-UcTeamsDevice
-<br/>Fix:ReportOnly was not showing when a device had an update pending.
-<br/>Change:Added last update sent to the device in the ouput
-<br/>Change:Added User UPN and Display Name for the user signed in on the device.
+<br/>Fix: ReportOnly was not showing when a device had an update pending.
+<br/>Change: Added last update sent to the device in the output.
+<br/>Change: Added User UPN and Display Name for the user signed in on the device.
 </li>
 </ul>
 <br/>0.3.3 - 2023/05/03
