@@ -172,7 +172,7 @@ Function Get-UcTeamsDevice {
         }
         
         $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcTeamsDevice, getting Teams device info").value
-
+        
         #To improve performance we will use batch requests
         $graphRequests =  [System.Collections.ArrayList]::new()
         foreach($TeamsDevice in $TeamsDeviceList){
@@ -220,8 +220,9 @@ Function Get-UcTeamsDevice {
             }
             $graphResponseExtra = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity $ActivityInfo -IncludeBody)
         }
-        
+        $devicesProcessed = 0
         foreach($TeamsDevice in $TeamsDeviceList){
+            $devicesProcessed++
             $userUPN = ($graphResponseExtra | Where-Object{$_.id -eq $TeamsDevice.currentuser.id}).body.userPrincipalName
 
             if($Detailed){
@@ -263,7 +264,7 @@ Function Get-UcTeamsDevice {
                     Manufacturer    = $TeamsDevice.hardwaredetail.manufacturer
                     Model           = $TeamsDevice.hardwaredetail.model
                     SerialNumber    = $TeamsDevice.hardwaredetail.serialNumber 
-                    MacAddresses    = $outMacAddress.subString(0,$outMacAddress.length-1)
+                    MacAddresses    = $outMacAddress
                                 
                     DeviceHealth    = $TeamsDevice.healthStatus
                     WhenCreated = $TeamsDevice.createdDateTime
@@ -328,14 +329,17 @@ Function Get-UcTeamsDevice {
             }
             $outTeamsDevices.Add($TDObj) | Out-Null
         }
-        #region: Modified by Daniel Jelinek
-        if($ExportCSV){
-            $OutputFullPath = [System.IO.Path]::Combine($OutputPath, $tmpFileName)
-            $outTeamsDevices | Sort-Object DeviceType,Manufacturer,Model| Select-Object TACDeviceID, DeviceType, Manufacturer, Model, UserDisplayName, UserUPN, Notes, CompanyAssetTag, SerialNumber, MacAddresses, WhenCreated, WhenChanged, ChangedByUser, HdmiIngestStatus, ComputeStatus, RoomCameraStatus, SpeakerStatus, CommunicationSpeakerStatus, MicrophoneStatus, SupportedMeetingMode, HardwareProcessor, SystemConfiguratio, TeamsAdminAgentVersion, FirmwareVersion, CompanyPortalVersion, OEMAgentAppVersion, TeamsAppVersion, LastUpdate, LastHistoryAction, LastHistoryStatus, LastHistoryInitiatedBy, LastHistoryModifiedDate, LastHistoryErrorCode, LastHistoryErrorMessage| Export-Csv -path $OutputFullPath -NoTypeInformation
-            Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
-        } else {
-            $outTeamsDevices | Sort-Object DeviceType,Manufacturer,Model
+        #20231020 - We only need to output if we have results.
+        if($devicesProcessed -gt 0){
+            #region: Modified by Daniel Jelinek
+            if($ExportCSV){
+                $OutputFullPath = [System.IO.Path]::Combine($OutputPath, $tmpFileName)
+                $outTeamsDevices | Sort-Object DeviceType,Manufacturer,Model| Select-Object TACDeviceID, DeviceType, Manufacturer, Model, UserDisplayName, UserUPN, Notes, CompanyAssetTag, SerialNumber, MacAddresses, WhenCreated, WhenChanged, ChangedByUser, HdmiIngestStatus, ComputeStatus, RoomCameraStatus, SpeakerStatus, CommunicationSpeakerStatus, MicrophoneStatus, SupportedMeetingMode, HardwareProcessor, SystemConfiguratio, TeamsAdminAgentVersion, FirmwareVersion, CompanyPortalVersion, OEMAgentAppVersion, TeamsAppVersion, LastUpdate, LastHistoryAction, LastHistoryStatus, LastHistoryInitiatedBy, LastHistoryModifiedDate, LastHistoryErrorCode, LastHistoryErrorMessage| Export-Csv -path $OutputFullPath -NoTypeInformation
+                Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
+            } else {
+                $outTeamsDevices | Sort-Object DeviceType,Manufacturer,Model
+            }
+            #endregion
         }
-        #endregion
     }
 }

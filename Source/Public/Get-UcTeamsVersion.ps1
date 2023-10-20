@@ -148,7 +148,7 @@ Function Get-UcTeamsVersion {
             }
             else {
                 $ProfilePath = $UserProfile.ProfileImagePath
-                #20232013 Added exception handeling, only known case is when a windows profile was created when the machine was joined to a previous domain.
+                #20231013 Added exception handeling, only known case is when a windows profile was created when the machine was joined to a previous domain.
                 try{
                     $ProfileName = (New-Object System.Security.Principal.SecurityIdentifier($UserProfile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
                 } catch {
@@ -205,9 +205,6 @@ Function Get-UcTeamsVersion {
                 $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersion')
                 [void]$outTeamsVersion.Add($TeamsVersion)
             }
-            #endregion
-            #region new teams
-            
             #endregion
         }
         if ($Credential -and $PSDriveName) {

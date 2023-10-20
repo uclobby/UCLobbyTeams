@@ -26,7 +26,6 @@ Please use the PowerShell Gallery to install this module:
 <br/>Test-UcTeamsDevicesEnrollmentPolicy
 <br/>Test-UcTeamsDevicesCompliancePolicy
 
-
 <br/>Get-UcArch
 <br/>Test-UcModuleUpdateAvailable
 
@@ -35,6 +34,19 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.4.1 - 2023/10/20
+<ul>
+<li>Get-UcM365LicenseAssignment
+  <br/>Feature: Added Parameter to filter for a specific SKU, only supports SKU Part Number and SKU Product Name (if UseFriendlyName is use).
+  <br/>Change: OutputPath will be for both report and "Product names and service plan identifiers for licensing.csv"
+  <br/>Change: Report will included a column with all service plans, when empty the license doesnt have the service, and "On/Off" will be the status of the assigned license service plan.
+  <br/>Change: Added execution time to the output.
+  <br/>Fix: Issue when generating a report on a tenant with a large number of users.
+</li>
+<li>Get-UcTeamsDevice
+  <br/>Fix: Exception was thrown when MAC Address was blank
+</li>
+</ul>
 <br/>0.4.0 - 2023/10/13
 <ul>
 <li>Get-UcM365Domains, Get-UcM365TenantId, Get-UcTeamsForest, Test-UcTeamsOnlyModeReadiness

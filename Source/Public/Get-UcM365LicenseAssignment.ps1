@@ -31,22 +31,23 @@ PS> Get-UcM365LicenseAssignment -UseFriendlyNames
 #>
 
 Function Get-UcM365LicenseAssignment {
-
     Param(
+        [string]$SKU,    
         [switch]$UseFriendlyNames,
         [switch]$SkipServicePlan,
         [string]$OutputPath
     )
 
-    if ((Test-UcMgGraphConnection -Scopes "Directory.Read.All" -AltScopes ("User.Read.All","Group.Read.All","Organization.Read.All"))) {
+    if ((Test-UcMgGraphConnection -Scopes "Directory.Read.All" -AltScopes ("User.Read.All","Organization.Read.All"))) {
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        $startTime=Get-Date;
         $outFile = "M365LicenseAssigment_" + (Get-Date).ToString('yyyyMMdd-HHmmss') + ".csv"
         #Verify if the Output Path exists
         if ($OutputPath) {
             if (!(Test-Path $OutputPath -PathType Container)) {
                 Write-Host ("Error: Invalid folder " + $OutputPath) -ForegroundColor Red
                 return
-            } 
+            }
             $OutputFilePath = [System.IO.Path]::Combine($OutputPath, $outFile)
         }
         else {                
@@ -54,7 +55,8 @@ Function Get-UcM365LicenseAssignment {
         }
         
         if($UseFriendlyNames){
-            $SKUnSPFilePath = [System.IO.Path]::Combine($env:USERPROFILE, "Downloads", "Product names and service plan identifiers forlicensing.csv")
+            #20231019 - Change: OutputPath will be for both report and Product names and service plan identifiers for licensing.csv
+            $SKUnSPFilePath = [System.IO.Path]::Combine($OutputPath, "Product names and service plan identifiers for licensing.csv")
             if (!(Test-Path -Path $SKUnSPFilePath)) {
                 try {
                     Write-Warning "M365 Product Names and Service Plans file not found, attempting to download it."
@@ -76,138 +78,145 @@ Function Get-UcM365LicenseAssignment {
         $gRequestTmp = New-Object -TypeName PSObject -Property @{
             id     = "TenantSKUs"
             method = "GET"
-            url    = "/subscribedSkus?`$select=skuID,skuPartNumber,servicePlans,appliesTo"
+            url    = "/subscribedSkus?`$select=skuID,skuPartNumber,servicePlans,appliesTo,consumedUnits"
         }
         [void]$graphRequests.Add($gRequestTmp)
         $TenantSKUs = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcM365LicenseAssignment, Step 1: Getting Tenant License information").value
 
-        $graphHeader = New-Object 'System.Collections.Generic.Dictionary[string, string]'
-        $graphHeader.Add("ConsistencyLevel", "eventual")
-        
+        #region 20232019 - Adding filter to SKU
+        if($SKU){
+            if ($UseFriendlyNames){
+                $SKUGUID = ($SKUnSP | Where-Object { $_.String_Id -eq $SKU -or $_.Product_Display_Name -eq $SKU} | Sort-Object GUID -Unique ).GUID
+                $TenantSKUs = $TenantSKUs | Where-Object {$_.skuId -eq $SKUGUID}
+                if($TenantSKUs.count -eq 0){
+                    Write-Warning "Could not find `"$SKU`" (SKU Name/Part Number) subscription associated with the tenant."
+                    return 
+                }
+            } else {
+                $TenantSKUs = $TenantSKUs | Where-Object {$_.skuPartNumber -eq $SKU}
+                if($TenantSKUs.count -eq 0){
+                    Write-Warning "Could not find `"$SKU`" (SKU Part Number) subscription associated with the tenant."
+                    return 
+                }
+            }
+        } else {
+            $TenantSKUs = $TenantSKUs | Where-Object -Property consumedUnits -GT -Value 0 | Sort-Object skuPartNumber
+        }
+        #endregion
+
+        #region 20131019 - Getting all Service Plans for new matrix style report
+        $allServicePlans = [System.Collections.ArrayList]::new()
+        foreach($TenantSKU in $TenantSKUs){
+            $tmpUserServicePlans = $TenantSKU.ServicePlans | Where-Object -Property appliesTo -EQ -Value "User" 
+            foreach($ServicePlan in $tmpUserServicePlans){
+                if(!($ServicePlan.ServicePlanId -in $allServicePlans.ServicePlanId)){
+                    if($UseFriendlyNames){
+                        $servicePlanName = ($SKUnSP | Where-Object { $_.Service_Plan_Id -eq $ServicePlan.ServicePlanId -and $_.GUID -eq $TenantSKU.skuID } | Sort-Object Service_Plans_Included_Friendly_Names -Unique).Service_Plans_Included_Friendly_Names
+                        if([string]::IsNullOrEmpty($servicePlanName)){
+                            $servicePlanName = $ServicePlan.servicePlanName    
+                        }
+                    } else {
+                        $servicePlanName = $ServicePlan.ServicePlanName
+                    }
+                    $tmpSP = New-Object -TypeName PSObject -Property @{
+                        servicePlanId       = $ServicePlan.ServicePlanId
+                        servicePlanName     = $servicePlanName
+                    }
+                    [void]$allServicePlans.Add($tmpSP)
+                }
+            }
+        }
+        #Sorting service plans by name and creating the file header
+        $allServicePlans = $allServicePlans | Sort-Object ServicePlanName
+        $row = "UserPrincipalName,LicenseAssigned,LicenseAssignment,LicenseAssignmentGroup"
+        if(!($SkipServicePlan)){
+            foreach($ServicePlan in $allServicePlans){
+                $row += "," +  $ServicePlan.servicePlanName
+            }
+        }
+        $row += [Environment]::NewLine
+        #endregion
+
+        $GraphRequestHeader = New-Object 'System.Collections.Generic.Dictionary[string, string]'
+        $GraphRequestHeader.Add("ConsistencyLevel", "eventual")
         $graphRequests = [System.Collections.ArrayList]::new()
         $gRequestTmp = New-Object -TypeName PSObject -Property @{
             id     = "GroupsWithLicenses"
             method = "GET"
-            headers= $graphHeader
+            headers= $GraphRequestHeader
             url    = "/groups?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=id,displayName,assignedLicenses&`$top=999"
         }
         [void]$graphRequests.Add($gRequestTmp)
         $GroupsWithLicenses = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcM365LicenseAssignment, Step 2: Getting Group with licenses assigned").value
-
-        $graphRequests = [System.Collections.ArrayList]::new()
-        $gRequestTmp = New-Object -TypeName PSObject -Property @{
-            id     = "UsersWithLicenses"
-            method = "GET"
-            headers= $graphHeader
-            url    = "/users?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=userPrincipalName,licenseAssignmentStates&`$top=999"
-        }
-        [void]$graphRequests.Add($gRequestTmp)
-        $UsersWithLicenses = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcM365LicenseAssignment, Step 3: Getting User License information").value
-        $userProcessed = 1
-        $totalUsers = $UsersWithLicenses.count
-        $outUserLicenseAssignment = [System.Collections.ArrayList]::new()
         
-        foreach($UserWithLicense in $UsersWithLicenses){
-            #Only update evey 1000 users processed
-            if(($userProcessed%1000 -eq 0) -or ($userProcessed -eq $totalUsers)){
-                Write-Progress -Activity "Get-UcM365LicenseAssignment, Step 4: Reading users assigned licenses/service plans" -Status "$userProcessed of $totalUsers"
-            }
-            foreach ($licenseState in $UserWithLicense.licenseAssignmentStates) {
-                $licenseAssignment = "Direct"
-                $licenseAssignmentGroup = ""
-    
-                if (!([string]::IsNullOrEmpty($licenseState.assignedByGroup))) {
-                    $licenseAssignment = "Inherited"
-                    $licenseAssignmentGroup = ($GroupsWithLicenses | Where-Object -Property "id" -EQ -Value $licenseState.assignedByGroup).displayName
-                }
-                
-                $SKU = $TenantSKUs | Where-Object { $_.skuID -eq $licenseState.skuId }
-                if(!($SkipServicePlan)){
-                    $tmpUserServicePlan = [System.Collections.ArrayList]::new()
-                    foreach($servicePlan in $SKU.servicePlans){
-                        if($servicePlan.appliesTo -eq "User"){
-                            if($servicePlan.servicePlanId -notin $licenseState.disabledPlans){
-                                $ServicePlanStatus = "On"
-                            } else {
-                                $ServicePlanStatus = "Off"
-                            }
-                            $ULObj = New-Object -TypeName PSObject -Property @{
-                                ServicePlanId = $servicePlan.servicePlanId
-                                ServicePlanName = $servicePlan.servicePlanName
-                                ServicePlanStatus = $ServicePlanStatus 
-                            }
-                            [void]$tmpUserServicePlan.Add($ULObj)
-                        }
-                    }
-                } else {
-                    $tmpUserServicePlan = "Service Plans skipped"
-                }
-
-                if ($SKU) {
-                    $tmpUserServicePlan = $tmpUserServicePlan | Sort-Object ServicePlanName
-                    $UTObj = New-Object -TypeName PSObject -Property @{
-                        UserUPN                     = $UserWithLicense.userPrincipalName
-                        License                     = $SKU.skuPartNumber
-                        LicenseID                   = $licenseState.skuId
-                        LicenseAssignment           = $licenseAssignment
-                        LicenseAssignmentGroup      = $licenseAssignmentGroup
-                        LicenseAssignmentGroupID    = $licenseState.assignedByGroup
-                        UserServicePlans            = $tmpUserServicePlan
-                    }
-                    $UTObj.PSObject.TypeNAmes.Insert(0, 'UserLicenseAssignment')
-                    [void]$outUserLicenseAssignment.Add($UTObj)
-                }
-            }
-            $userProcessed++
-        }
-
-        if ($outUserLicenseAssignment) {
-            if($SkipServicePlan){
-                $outUserLicenseAssignment | Sort-Object UserUPN, License, LicenseAssignment | Select-Object UserUPN, License, LicenseAssignment, LicenseAssignmentGroup | Export-Csv -Path $OutputFilePath -NoTypeInformation
+        Write-Progress -Id 3 -Activity "Get-UcM365LicenseAssignment, Step 3: Reading users assigned licenses/service plans"
+        foreach($TenantSKU in $TenantSKUs)
+        {
+            if($UseFriendlyNames){
+                $LicenseDisplayName = ($SKUnSP | Where-Object { $_.GUID -eq $TenantSKU.skuID } | Sort-Object Product_Display_Name -Unique).Product_Display_Name
             } else {
-                $headerstring = "UserPrincipalName,LicenseAssigned,LicenseAssignment,LicenseAssignmentGroup"
-                $lastSKU = ""
-
-                $LAProcessed = 1
-                $totalLicenseAssignments = $outUserLicenseAssignment.Count
-
-                $outUserLicenseAssignment  = $outUserLicenseAssignment | Sort-Object License,UserUPN,LicenseAssignment
-                foreach($userEntry in $outUserLicenseAssignment){
-                    #Only update activity every 1000 entries
-                    if(($LAProcessed%1000 -eq 0) -or ($LAProcessed -eq $totalLicenseAssignments)){
-                        Write-Progress -Activity "Get-UcM365LicenseAssignment, Step 5: Writing license assignments" -Status "$LAProcessed of $totalLicenseAssignments"
-                    }
-                    $row = ""
-                    if($lastSKU -ne $userEntry.LicenseID){
-                        $lastSKU = $userEntry.LicenseID
-                        $row += [Environment]::NewLine + $headerstring
-                        if($UseFriendlyNames){
-                            $LicenseDisplayName = ($SKUnSP | Where-Object { $_.GUID -eq $userEntry.LicenseID }|Sort-Object Product_Display_Name -Unique).Product_Display_Name
-                        } else {
-                            $LicenseDisplayName = $userEntry.License
-                        }
-                        foreach($plan in $userEntry.UserServicePlans){
-                            if($UseFriendlyNames){
-                                $servicePlanName = ($SKUnSP | Where-Object { $_.Service_Plan_Id -eq $plan.ServicePlanId  } | Sort-Object Service_Plans_Included_Friendly_Names -Unique).Service_Plans_Included_Friendly_Names
-                                if([string]::IsNullOrEmpty($servicePlanName)){
-                                    $servicePlanName = $plan.servicePlanName    
-                                }
-                            } else {
-                                $servicePlanName = $plan.ServicePlanName
-                            }
-                            $row += "," + $servicePlanName 
-                        }
-                        $row += [Environment]::NewLine
-                    } 
-                    $row += $userEntry.UserUPN + "," + $LicenseDisplayName + "," + $userEntry.LicenseAssignment + "," + $userEntry.LicenseAssignmentGroup
-                    foreach($plan in $userEntry.UserServicePlans){
-                        $row += "," + $plan.ServicePlanStatus
-                    }
-                    Out-File -FilePath $OutputFilePath -InputObject $row -Encoding UTF8 -append
-                    $LAProcessed++    
-                }
+                $LicenseDisplayName = $TenantSKU.skuPartNumber
             }
+            $SKUUserServicePlans = $TenantSKU.servicePlans | Where-Object -Property appliesTo -EQ -Value "User" | Sort-Object servicePlanName
+            $usersProcessed = 0       
+            $GraphRequestURI = "https://graph.microsoft.com/v1.0/users?`$filter=assignedLicenses/any(u:u/skuId eq " + $TenantSKU.skuId + " )&`$select=userPrincipalName,licenseAssignmentStates&`$orderby=userPrincipalName&`$count=true&`$top=999"
+            do{
+                try{
+					$UsersWithLicenses = Invoke-MgGraphRequest -Method Get -Uri $GraphRequestURI -Headers $GraphRequestHeader
+					if (![string]::IsNullOrEmpty($UsersWithLicenses.'@odata.count')){
+						$TotalUsers = $UsersWithLicenses.'@odata.count'
+					}
+					$GraphRequestURI = $UsersWithLicenses.'@odata.nextLink'
+					foreach($UserWithLicense in $UsersWithLicenses.value){
+						if(($usersProcessed%1000 -eq 0) -or ($usersProcessed -eq $TotalUsers)){
+							Write-Progress -ParentId 3 -Activity "Checking license assignments for $LicenseDisplayName" -Status "$usersProcessed of $TotalUsers"
+						}
+						$tmpLicenseAssignmentStates = $UserWithLicense.licenseAssignmentStates | Where-Object -Property skuId -EQ -Value $TenantSKU.skuId | Sort-Object assignedByGroup
+						foreach ($licenseState in $tmpLicenseAssignmentStates) {
+							$licenseAssignment = "Direct"
+							$licenseAssignmentGroup = ""
+							if (!([string]::IsNullOrEmpty($licenseState.assignedByGroup))) {
+								$licenseAssignment = "Inherited"
+								$licenseAssignmentGroup = ($GroupsWithLicenses | Where-Object -Property "id" -EQ -Value $licenseState.assignedByGroup).displayName
+								if([string]::IsNullOrEmpty($licenseAssignmentGroup)){
+									$licenseAssignmentGroup = $licenseState.assignedByGroup
+								}
+							}
+							$userServicePlans = ""
+							if(!($SkipServicePlan)){
+								foreach($ServicePlan in $allServicePlans){
+									if($servicePlan.servicePlanId -in $SKUUserServicePlans.servicePlanId){
+										if($servicePlan.servicePlanId -notin $licenseState.disabledPlans){
+											$userServicePlans += ",On"
+										} else {
+											$userServicePlans += ",Off"
+										}
+									} else {
+										$userServicePlans += ","
+									}
+								}
+							}
+							$row += $UserWithLicense.userPrincipalName + "," + $LicenseDisplayName + "," + $LicenseAssignment + "," + $LicenseAssignmentGroup + $userServicePlans
+							Out-File -FilePath $OutputFilePath -InputObject $row -Encoding UTF8 -append
+							$row = ""
+						}
+						$usersProcessed++
+					}
+				} catch {
+						Write-Warning ("Failed to get Users with assigned SKU Id: " + $TenantSKU.skuID)
+						$GraphRequestURI = ""
+				}
+				
+            } while(![string]::IsNullOrEmpty($GraphRequestURI))
         }
-        Write-Host ("Results available in " + $OutputFilePath) -ForegroundColor Cyan
+        if($usersProcessed -gt 0){
+            Write-Host ("Results available in " + $OutputFilePath) -ForegroundColor Cyan
+            #region 20231019 - Change: Added execution time to the output.
+            $endTime = Get-Date
+            $totalSeconds= [math]::round(($endTime - $startTime).TotalSeconds,2)
+            $totalTime = New-TimeSpan -Seconds $totalSeconds
+            Write-Host "Execution time:" $totalTime.Hours "Hours" $totalTime.Minutes "Minutes" $totalTime.Seconds "Seconds" -ForegroundColor Green
+            #endregion
+        }
     }
 }
