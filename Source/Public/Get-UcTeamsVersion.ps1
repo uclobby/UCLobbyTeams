@@ -140,6 +140,9 @@ Function Get-UcTeamsVersion {
             $ComputerName = $Env:COMPUTERNAME
             $Profiles = Get-childItem 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList' | ForEach-Object { Get-ItemProperty $_.pspath } | Where-Object { $_.fullprofile -eq 1 }
         }
+        if(!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+            Write-Warning "Please run with elevated privileges to output new Teams version."
+        }
         
         foreach ($UserProfile in $Profiles) {
             if ($Computer) {
@@ -204,6 +207,34 @@ Function Get-UcTeamsVersion {
                 }
                 $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersion')
                 [void]$outTeamsVersion.Add($TeamsVersion)
+            }
+            #endregion
+
+            #region New Teams
+            #Adding output for new Teams, remote currently not supported
+            if(!($Computer) -and ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+                $NewTeamsSettingPath = $ProfilePath + "\AppData\Local\Publishers\8wekyb3d8bbwe\TeamsSharedConfig\tma_settings.json"
+                if (Test-Path $NewTeamsSettingPath -ErrorAction SilentlyContinue) {
+                    $NewTeamsSettings = Get-Content -Path $NewTeamsSettingPath | ConvertFrom-Json
+                    $tmpAccountID = $NewTeamsSettings.primary_user.accounts.account_id
+                    $newTeamsLocations = Get-ChildItem -Path "C:\Program Files\Windowsapps" -Filter "ms-teams.exe" -Recurse -Depth 1 | Sort-Object -Property CreationTime -Descending | Select-Object -First 1
+                    if(Test-Path -Path $newTeamsLocations.FullName -ErrorAction SilentlyContinue){
+                        $TeamsVersion = New-Object -TypeName PSObject -Property @{
+                            Computer         = $ComputerName
+                            Profile          = $ProfileName
+                            ProfilePath      = $ProfilePath
+                            Version          = $newTeamsLocations.VersionInfo.ProductVersion
+                            Ring             = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.ring
+                            Environment      = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.environment
+                            CloudEnvironment = $NewTeamsSettings.primary_user.accounts.cloud
+                            Region           = ""
+                            Arch             = Get-UcArch $newTeamsLocations.FullName
+                            InstallDate      = $newTeamsLocations.CreationTime | Get-Date -Format $currentDateFormat
+                        }
+                        $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersion')
+                        [void]$outTeamsVersion.Add($TeamsVersion)
+                    }
+                }
             }
             #endregion
         }

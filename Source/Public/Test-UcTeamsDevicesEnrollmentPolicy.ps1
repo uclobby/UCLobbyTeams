@@ -188,11 +188,14 @@ Function Test-UcTeamsDevicesEnrollmentPolicy {
                 }
             }
             if($Detailed){
-                #$output | Sort-Object PID | Format-List
                 if ($ExportCSV) {
                     $output |Sort-Object PID | Select-Object PolicyName, PolicyPriority, PlatformType, AssignedToGroup, TeamsDevicesStatus, PlatformBlocked, PersonalDeviceEnrollmentBlocked, osMinimumVersion, osMaximumVersion, blockedManufacturers | Export-Csv -path $OutputFullPath -NoTypeInformation
                     Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
                     return
+                }
+                #20231116 - Fix for empty output.
+                else {
+                    $output | Sort-Object PID | Format-List
                 }
 
             } else {

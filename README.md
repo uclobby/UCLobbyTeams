@@ -33,7 +33,15 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
-
+<br/>0.4.2 - 2023/11/17
+<ul>
+<li>Get-UcTeamsVersion
+<br/>Feature: Add support for new Teams version.
+</li>
+<li>Test-UcTeamsDevicesEnrollmentPolicy
+  <br/>Fix: Output was empty when only -Detailed Switch was used.
+</li>
+</ul>
 <br/>0.4.1 - 2023/10/20
 <ul>
 <li>Get-UcM365LicenseAssignment
