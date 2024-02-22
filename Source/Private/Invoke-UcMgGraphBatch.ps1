@@ -20,7 +20,7 @@ Function Invoke-UcMgGraphBatch {
 
     #If activity is null then we can use this to get the function that call this function.
     if (!($Activity)) {
-        $Activity = (c)[1].FunctionName
+        $Activity = [string]$(Get-PSCallStack)[1].FunctionName
     }
 
     $g = 1

@@ -28,7 +28,6 @@ PS> Test-UcTeamsDevicesEnrollmentPolicy
 PS> Test-UcTeamsDevicesEnrollmentPolicy -UserUPN
 
 #>
-
 Function Test-UcTeamsDevicesEnrollmentPolicy {
     Param(
         [string]$UserUPN,
@@ -41,7 +40,7 @@ Function Test-UcTeamsDevicesEnrollmentPolicy {
     $GraphURI_EnrollmentPolicies = "https://graph.microsoft.com/beta/deviceManagement/deviceEnrollmentConfigurations"
     $output = [System.Collections.ArrayList]::new()
 
-    if (Test-UcMgGraphConnection -Scopes "DeviceManagementServiceConfig.Read.All", "Directory.Read.All") {
+    if (Test-UcMgGraphConnection -Scopes "DeviceManagementServiceConfig.Read.All","DeviceManagementConfiguration.Read.All", "Directory.Read.All") {
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         $outFileName = "TeamsDevices_EnrollmentPolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
         if ($OutputPath) {
@@ -117,10 +116,8 @@ Function Test-UcTeamsDevicesEnrollmentPolicy {
                 $Status = "Not Supported"
                 #This is the default enrollment policy that is applied to all users/devices
                 if($EnrollmentPolicy."@odata.type" -eq "#microsoft.graph.deviceEnrollmentPlatformRestrictionsConfiguration"){
-                    if(!($EnrollmentPolicy.androidRestriction.platformBlocked)) {
-                        if(!($EnrollmentPolicy.androidRestriction.personalDeviceEnrollmentBlocked)){
-                            $Status = "Supported"
-                        }
+                    if(!($EnrollmentPolicy.androidRestriction.platformBlocked) -and !($EnrollmentPolicy.androidRestriction.personalDeviceEnrollmentBlocked)){
+                        $Status = "Supported"
                     }
                     $SettingPSObj = [PSCustomObject]@{
                         PID                             = 9999
@@ -162,10 +159,8 @@ Function Test-UcTeamsDevicesEnrollmentPolicy {
                         elseif ($AssignedToGroup.count -gt 1) {
                             $outAssignedToGroup = "" + $AssignedToGroup.count + " group(s)"
                         }
-                        if(!($EnrollmentPolicy.platformRestriction.platformBlocked)) {
-                            if(!($EnrollmentPolicy.platformRestriction.personalDeviceEnrollmentBlocked)){
-                                $Status = "Supported"
-                            }
+                        if(!($EnrollmentPolicy.platformRestriction.platformBlocked) -and !($EnrollmentPolicy.platformRestriction.personalDeviceEnrollmentBlocked)){
+                            $Status = "Supported"
                         }
 
                         $SettingPSObj = [PSCustomObject]@{
@@ -204,4 +199,3 @@ Function Test-UcTeamsDevicesEnrollmentPolicy {
         }
     }
 }
-

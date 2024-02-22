@@ -33,6 +33,13 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
+<br/>0.4.3 - 2024/02/22
+<ul>
+<li>Update-UcTeamsDevice
+<br/>Feature: Added parameter SoftwareVersion to specify the version.
+<br/>Change: If only one device is updated then the output will be on PowerShell window and not generate an output file
+</li>
+</ul>
 <br/>0.4.2 - 2023/11/17
 <ul>
 <li>Get-UcTeamsVersion
@@ -191,7 +198,7 @@ Please use the PowerShell Gallery to install this module:
 </ul>
 <br/>0.1.3 - 2022/06/10
 <ul>
-  <li>Get-UcTeamVersion
+  <li>Get-UcTeamsVersion
   <br/>Fixed the issue where the version was limited to 4 digits.
   <br/>Added information for Ring, Environment, Region.</li>
   <li>Get-UcTeamUsersEmail
