@@ -10,11 +10,9 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcM365Domains
 <br/>Get-UcM365TenantId 
 <br/>Get-UcM365LicenseAssignment
-<br/>Get-UcTeamsForest
 
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
-<br/>Test-UcTeamsOnlyModeReadiness
 
 <br/>Get-UcTeamsVersion
 <br/>Get-UcTeamsVersionBatch
@@ -33,6 +31,21 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
+<br/>0.4.4 - 2024/03/14
+<ul>
+<li>Get-UcTeamsVersion
+<br/>Feature: Add support for New Teams on a Remote Computer.
+<br/>Feature: Add suport for New Teams from Path
+<br/>Feature: Add column Type which will have New Teams or Classic Teams.
+<br/>Change: Removed column Region.
+<br/>Change: Use Get-AppPackage to determine MS Teams Instalation Path and remove the requirement of administative rights.
+<br/>Fix: In some scenarios the install date was missing and generating an error.
+</li>
+<li>The following cmdlets were removed after webdir.online.lync.com retirement:
+<br/>Get-UcTeamsForest
+<br/>Test-UcTeamsOnlyModeReadiness
+</li>
+</ul>
 <br/>0.4.3 - 2024/02/22
 <ul>
 <li>Update-UcTeamsDevice

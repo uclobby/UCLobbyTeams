@@ -40,6 +40,9 @@
 								<PropertyName>Arch</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
+								<PropertyName>Type</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
 								<PropertyName>Version</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
@@ -47,9 +50,6 @@
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Ring</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Region</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>InstallDate</PropertyName>
@@ -67,12 +67,8 @@
 			<TableControl>
 				<TableHeaders>
 					<TableColumnHeader>
-						<Label>Windows Sign In User</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
 						<Label>Teams Sign In User</Label>
 					</TableColumnHeader>
-					<TableColumnHeader />
 					<TableColumnHeader />
 					<TableColumnHeader />
 					<TableColumnHeader />
@@ -80,9 +76,6 @@
 				<TableRowEntries>
 					<TableRowEntry>
 						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>WindowsUser</PropertyName>
-							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>TeamsUser</PropertyName>
 							</TableColumnItem>
@@ -94,47 +87,6 @@
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Ring</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Region</PropertyName>
-							</TableColumnItem>								
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		<View>
-			<Name>TeamsOnlyModeReadiness</Name>
-			<ViewSelectedBy>
-				<TypeName>TeamsOnlyModeReadiness</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<TableHeaders>
-					<TableColumnHeader />
-					<TableColumnHeader>
-						<Width>9</Width>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Discovery Record</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Federation Record</Label>
-					</TableColumnHeader>
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>Domain</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>Status</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>DiscoverRecord</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>FederationRecord</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>
