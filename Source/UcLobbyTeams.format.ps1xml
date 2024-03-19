@@ -687,5 +687,49 @@
 				</TableRowEntries>
 			</TableControl>
 		</View>
+		<View>
+			<Name>TeamsOnlyDNSRequirements</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsOnlyDNSRequirements</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader />
+					<TableColumnHeader>
+						<Label>DiscoverRecord (lyncdiscover.*)</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>SIPRecord (sip.*)</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>SIPTLSRecord (_sip._tls.*)</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>FederationRecord (_sipfederationtls._tcp.*)</Label>
+					</TableColumnHeader>					
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>Domain</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DiscoverRecord</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>SIPRecord</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>SIPTLSRecord</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>FederationRecord</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
 	</ViewDefinitions>
 </Configuration>

@@ -21,15 +21,7 @@ Function Get-UcM365Domains {
     try {
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
-        foreach ($AllowedAudience in $AllowedAudiences) {
-            $temp = [regex]::Match($AllowedAudience , $regex).captures.groups
-            if ($temp.count -ge 2) {
-                $tempObj = New-Object -TypeName PSObject -Property @{
-                    Name = $temp[2].value
-                }
-                $outDomains.Add($tempObj) | Out-Null
-            }
-        }
+        
     }
     catch [System.Net.WebException] {
         if ($PSItem.Exception.Message -eq "The remote server returned an error: (400) Bad Request.") {
@@ -40,6 +32,24 @@ Function Get-UcM365Domains {
         }
     }
     catch {
+        #20240318 - Support for GCC High tenants.
+        try{
+            $AllowedAudiences = Invoke-WebRequest -Uri ("https://login.microsoftonline.us/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
+        } catch {
+            Write-Warning "Unknown error while checking domain: $Domain"
+        }
+    }
+    try{
+        foreach ($AllowedAudience in $AllowedAudiences) {
+            $temp = [regex]::Match($AllowedAudience , $regex).captures.groups
+            if ($temp.count -ge 2) {
+                $tempObj = New-Object -TypeName PSObject -Property @{
+                    Name = $temp[2].value
+                }
+                $outDomains.Add($tempObj) | Out-Null
+            }
+        }
+    } catch {
         Write-Warning "Unknown error while checking domain: $Domain"
     }
     return $outDomains

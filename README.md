@@ -10,6 +10,7 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcM365Domains
 <br/>Get-UcM365TenantId 
 <br/>Get-UcM365LicenseAssignment
+<br/>Test-UcTeamsOnlyDNSRequirements
 
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
@@ -31,6 +32,16 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
+
+<br/>0.5.0 - 2024/03/19
+<ul>
+<li>Test-UcTeamsOnlyDNSRequirements
+<br/>New cmdlet: Check if the DNS entries that were previously required are still configured.
+</li>
+<li>Get-UcM365Domains
+<br/>Fatrure: Added support fro GCC High tenants.
+</li>
+</ul>
 <br/>0.4.4 - 2024/03/14
 <ul>
 <li>Get-UcTeamsVersion
