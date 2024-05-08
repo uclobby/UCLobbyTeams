@@ -33,6 +33,16 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.5.1 - 2024/05/08
+<ul>
+<li>Test-UcTeamsDevicesCompliancePolicy
+  <br/>Fix: Only the applicable settings will be checked for Android AOSP compliance policies.
+</li>
+<li>Get-UcTeamsDevice
+<br/>Change: Added ConnectionStatus and ConnectionLastActivity in the detailed output.
+<br/>Change: Display date and time in the current timezone for WhenCreated, WhenChanged, LastHistoryModifiedDate, ConfigurationCreateDate and ConfigurationLastModifiedDate.
+</li>
+</ul>
 <br/>0.5.0 - 2024/03/19
 <ul>
 <li>Test-UcTeamsOnlyDNSRequirements

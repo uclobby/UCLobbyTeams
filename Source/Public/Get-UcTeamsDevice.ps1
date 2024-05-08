@@ -235,7 +235,7 @@ Function Get-UcTeamsDevice {
                     $LastHistoryAction = $TeamsDeviceOperations[0].operationType
                     $LastHistoryStatus = $TeamsDeviceOperations[0].status
                     $LastHistoryInitiatedBy = $TeamsDeviceOperations[0].createdBy.user.displayName
-                    $LastHistoryModifiedDate = $TeamsDeviceOperations[0].lastActionDateTime
+                    $LastHistoryModifiedDate = ($TeamsDeviceOperations[0].lastActionDateTime).ToLocalTime()
                     $LastHistoryErrorCode = $TeamsDeviceOperations[0].error.code
                     $LastHistoryErrorMessage = $TeamsDeviceOperations[0].error.message
                 } else {
@@ -267,16 +267,18 @@ Function Get-UcTeamsDevice {
                     MacAddresses    = $outMacAddress
                                 
                     DeviceHealth    = $TeamsDevice.healthStatus
-                    WhenCreated = $TeamsDevice.createdDateTime
-                    WhenChanged = $TeamsDevice.lastModifiedDateTime
-                    ChangedByUser = $TeamsDevice.lastModifiedBy.user.displayName
+                    WhenCreated     = ($TeamsDevice.createdDateTime).ToLocalTime()
+                    WhenChanged     = ($TeamsDevice.lastModifiedDateTime).ToLocalTime()
+                    ChangedByUser   = $TeamsDevice.lastModifiedBy.user.displayName
         
                     #Activity
                     ActivePeripherals = $TeamsDeviceActivity.activePeripherals
         
                     #Configuration
-                    LastUpdate = $TeamsDeviceConfiguration.createdDateTime
-        
+                    ConfigurationCreateDate = ($TeamsDeviceConfiguration.createdDateTime).ToLocalTime()
+                    ConfigurationCreatedBy = $TeamsDeviceConfiguration.createdBy
+                    ConfigurationLastModifiedDate = ($TeamsDeviceConfiguration.lastModifiedDateTime).ToLocalTime()
+                    ConfigurationLastModifiedBy = $TeamsDeviceConfiguration.lastModifiedBy
                     DisplayConfiguration = $TeamsDeviceConfiguration.displayConfiguration
                     CameraConfiguration = $TeamsDeviceConfiguration.cameraConfiguration.contentCameraConfiguration
                     SpeakerConfiguration = $TeamsDeviceConfiguration.speakerConfiguration
@@ -287,6 +289,10 @@ Function Get-UcTeamsDevice {
                     SystemConfiguration = $TeamsDeviceConfiguration.systemConfiguration
         
                     #Health
+                    #20240417 - Added connection fields
+                    ConnectionStatus = $TeamsDeviceHealth.connection.connectionStatus
+                    ConnectionLastActivity = ($TeamsDeviceHealth.connection.lastModifiedDateTime).ToLocalTime()
+                    
                     ComputeStatus = $TeamsDeviceHealth.hardwareHealth.computeHealth.connection.connectionStatus
                     HdmiIngestStatus = $TeamsDeviceHealth.hardwareHealth.hdmiIngestHealth.connection.connectionStatus
                     RoomCameraStatus = $TeamsDeviceHealth.peripheralsHealth.roomCameraHealth.connection.connectionStatus
@@ -324,6 +330,11 @@ Function Get-UcTeamsDevice {
                     MacAddresses    = $TeamsDevice.hardwaredetail.macAddresses
                                 
                     DeviceHealth    = $TeamsDevice.healthStatus
+
+                    #20240419 - Adding additional fields that are available on graph api
+                    WhenCreated     = ($TeamsDevice.createdDateTime).ToLocalTime()
+                    WhenChanged     = ($TeamsDevice.lastModifiedDateTime).ToLocalTime()
+                    ChangedByUser   = $TeamsDevice.lastModifiedBy.user.displayName
                 }
                 $TDObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceList')
             }

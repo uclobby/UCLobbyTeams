@@ -176,7 +176,25 @@
 								<PropertyName>ChangedByUser</PropertyName>
 							</ListItem>
 							<ListItem>
+								<PropertyName>ConnectionStatus</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ConnectionLastActivity</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>ActivePeripherals</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ConfigurationCreateDate</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ActivePConfigurationCreatedBy</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ConfigurationLastModifiedDate</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ConfigurationLastModifiedBy</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>HdmiIngestStatus</PropertyName>
@@ -238,7 +256,6 @@
 							<ListItem>
 								<PropertyName>LastUpdate</PropertyName>
 							</ListItem>
-
 							<ListItem>
 								<PropertyName>LastHistoryAction</PropertyName>
 							</ListItem>

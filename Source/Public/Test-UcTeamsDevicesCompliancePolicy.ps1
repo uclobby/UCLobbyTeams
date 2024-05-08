@@ -276,7 +276,7 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                             $URLSupportedCompliancePolicies = $URLSupportedCompliancePoliciesWindows
                         }
 
-                        #region Common settings between Android and Windows 
+                        #region Common settings between Android (ADA and AOSP) and Windows 
                         #region 9: Device Properties > Operation System Version
                         $ID = 9.1
                         $Setting = "osMinimumVersion"
@@ -392,7 +392,8 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                         #endregion
                         #endregion
 
-                        if ($CompliancePolicy."@odata.type" -in $SupportedAndroidCompliancePolicies) {
+                        #20240508 - We need to limit the settings since not all are available in AOSP compliance policies.
+                        if ($CompliancePolicy."@odata.type" -in $SupportedAndroidCompliancePolicies -and $CompliancePolicy."@odata.type" -ne "#microsoft.graph.aospDeviceOwnerCompliancePolicy") {
 
                             #region 1: Microsoft Defender for Endpoint > Require the device to be at or under the machine risk score
                             $ID = 1
@@ -439,40 +440,6 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                                 $SettingValue = "Block"
                                 $Comment = "Teams Android devices management requires device administrator to be enabled."
                                 $PolicyErrors++
-                            }
-                            else {
-                                $Status = "Supported"
-                            }
-                            $SettingPSObj = [PSCustomObject]@{
-                                PolicyName            = $CompliancePolicy.displayName
-                                PolicyType            = $CPType
-                                Setting               = $Setting
-                                Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
-                                SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
-                            }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
-                            [void]$output.Add($SettingPSObj)
-                            #endregion
-
-                            #region 3: Device Health > Rooted devices
-                            $ID = 3
-                            $Setting = "securityBlockJailbrokenDevices"
-                            $SettingDescription = "Device Health > Rooted devices"
-                            $SettingValue = "Not Configured"
-                            $Comment = ""
-                            if ($CompliancePolicy.securityBlockJailbrokenDevices) {
-                                $Status = "Warning"
-                                $SettingValue = "Block"
-                                $Comment = "This setting can cause sign in issues."
-                                $PolicyWarnings++
                             }
                             else {
                                 $Status = "Supported"
@@ -671,42 +638,6 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
-                        
-
-                            #region 10: System Security > Encryption > Require encryption of data storage on device.
-                            $ID = 10
-                            $Setting = "storageRequireEncryption"
-                            $SettingDescription = "System Security > Encryption > Require encryption of data storage on device"
-                            $SettingValue = "Not Configured"
-                            $Comment = ""
-                            if ($CompliancePolicy.storageRequireEncryption) {
-                                $Status = "Warning"
-                                $SettingValue = "Require"
-                                $Comment = "Manufacturers might configure encryption attributes on their devices in a way that Intune doesn't recognize. If this happens, Intune marks the device as noncompliant."
-                                $PolicyWarnings++
-                            }
-                            else {
-                                $Status = "Supported"
-                            }
-                            $SettingPSObj = [PSCustomObject]@{
-                                PolicyName            = $CompliancePolicy.displayName
-                                PolicyType            = $CPType
-                                Setting               = $Setting
-                                Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
-                                SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
-                            }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
-                            [void]$output.Add($SettingPSObj)
-                            #endregion
-
                             #region 11: System Security > Device Security > Block apps from unknown sources
                             $ID = 11
                             $Setting = "securityPreventInstallAppsFromUnknownSources"
@@ -741,16 +672,87 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
-                            #region 14: System Security > Device Security > Minimum security patch level
-                            $ID = 14
-                            $Setting = "minAndroidSecurityPatchLevel"
-                            $SettingDescription = "System Security > Device Security > Minimum security patch level"
+                            #region 15: System Security > Device Security > Restricted apps
+                            $ID = 15
+                            $Setting = "securityPreventInstallAppsFromUnknownSources"
+                            $SettingDescription = "System Security > Device Security > Restricted apps"
                             $SettingValue = "Not Configured"
                             $Comment = ""
-                            if (!([string]::IsNullOrEmpty($CompliancePolicy.minAndroidSecurityPatchLevel))) {
+                            if (($CompliancePolicy.restrictedApps).count -gt 0 ) {
+                                $Status = "Unsupported"
+                                $SettingValue = "Found " + ($CompliancePolicy.restrictedApps).count + " restricted app(s)"
+                                $Comment = $URLSupportedCompliancePolicies
+                                $PolicyErrors++
+                            }
+                            else {
+                                $Status = "Supported"
+                            }
+                            $SettingPSObj = [PSCustomObject]@{
+                                PolicyName            = $CompliancePolicy.displayName
+                                PolicyType            = $CPType
+                                Setting               = $Setting
+                                Value                 = $SettingValue
+                                TeamsDevicesStatus    = $Status 
+                                Comment               = $Comment
+                                SettingDescription    = $SettingDescription
+                                AssignedToGroup       = $outAssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                PolicyID              = $CompliancePolicy.id
+                                ID                    = $ID
+                            }
+                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
+                            [void]$output.Add($SettingPSObj)
+                            #endregion
+                        }
+                        
+                        if ($CompliancePolicy."@odata.type" -in $SupportedAndroidCompliancePolicies) {
+
+                             #region 3: Device Health > Rooted devices
+                             $ID = 3
+                             $Setting = "securityBlockJailbrokenDevices"
+                             $SettingDescription = "Device Health > Rooted devices"
+                             $SettingValue = "Not Configured"
+                             $Comment = ""
+                             if ($CompliancePolicy.securityBlockJailbrokenDevices) {
+                                 $Status = "Warning"
+                                 $SettingValue = "Block"
+                                 $Comment = "This setting can cause sign in issues."
+                                 $PolicyWarnings++
+                             }
+                             else {
+                                 $Status = "Supported"
+                             }
+                             $SettingPSObj = [PSCustomObject]@{
+                                 PolicyName            = $CompliancePolicy.displayName
+                                 PolicyType            = $CPType
+                                 Setting               = $Setting
+                                 Value                 = $SettingValue
+                                 TeamsDevicesStatus    = $Status 
+                                 Comment               = $Comment
+                                 SettingDescription    = $SettingDescription
+                                 AssignedToGroup       = $outAssignedToGroup
+                                 ExcludedFromGroup     = $outExcludedFromGroup 
+                                 AssignedToGroupList   = $AssignedToGroup
+                                 ExcludedFromGroupList = $ExcludedFromGroup
+                                 PolicyID              = $CompliancePolicy.id
+                                 ID                    = $ID
+                             }
+                             $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
+                             [void]$output.Add($SettingPSObj)
+                             #endregion
+
+                            #region 10: System Security > Encryption > Require encryption of data storage on device.
+                            $ID = 10
+                            $Setting = "storageRequireEncryption"
+                            $SettingDescription = "System Security > Encryption > Require encryption of data storage on device"
+                            $SettingValue = "Not Configured"
+                            $Comment = ""
+                            if ($CompliancePolicy.storageRequireEncryption) {
                                 $Status = "Warning"
-                                $SettingValue = $CompliancePolicy.minAndroidSecurityPatchLevel
-                                $Comment = "This setting can cause sign in issues."
+                                $SettingValue = "Require"
+                                $Comment = "Manufacturers might configure encryption attributes on their devices in a way that Intune doesn't recognize. If this happens, Intune marks the device as noncompliant."
                                 $PolicyWarnings++
                             }
                             else {
@@ -774,18 +776,18 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                             $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
-
-                            #region 15: System Security > Device Security > Restricted apps
-                            $ID = 15
-                            $Setting = "securityPreventInstallAppsFromUnknownSources"
-                            $SettingDescription = "System Security > Device Security > Restricted apps"
+                            
+                            #region 14: System Security > Device Security > Minimum security patch level
+                            $ID = 14
+                            $Setting = "minAndroidSecurityPatchLevel"
+                            $SettingDescription = "System Security > Device Security > Minimum security patch level"
                             $SettingValue = "Not Configured"
                             $Comment = ""
-                            if (($CompliancePolicy.restrictedApps).count -gt 0 ) {
-                                $Status = "Unsupported"
-                                $SettingValue = "Found " + ($CompliancePolicy.restrictedApps).count + " restricted app(s)"
-                                $Comment = $URLSupportedCompliancePolicies
-                                $PolicyErrors++
+                            if (!([string]::IsNullOrEmpty($CompliancePolicy.minAndroidSecurityPatchLevel))) {
+                                $Status = "Warning"
+                                $SettingValue = $CompliancePolicy.minAndroidSecurityPatchLevel
+                                $Comment = "This setting can cause sign in issues."
+                                $PolicyWarnings++
                             }
                             else {
                                 $Status = "Supported"
