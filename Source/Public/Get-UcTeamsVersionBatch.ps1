@@ -1,45 +1,46 @@
-<#
-.SYNOPSIS
-Get Microsoft Teams Desktop Version from all computers in a csv file.
-
-.DESCRIPTION
-This function returns the installed Microsoft Teams desktop version for each user profile.
-
-.PARAMETER InputCSV
-CSV with the list of computers that we want to get the Teams Version
-
-.PARAMETER OutputPath
-Specify the output path
-
-.PARAMETER ExportCSV
-Export the output to a CSV file
-
-.PARAMETER Credential
-Specify the credential to be used to connect to the remote computers
-
-.EXAMPLE
-PS> Get-UcTeamsVersionBatch
-
-.EXAMPLE
-PS> Get-UcTeamsVersionBatch -InputCSV C:\Temp\ComputerList.csv -Credential $cred
-
-.EXAMPLE
-PS> Get-UcTeamsVersionBatch -InputCSV C:\Temp\ComputerList.csv -Credential $cred -ExportCSV
-#>
-
-Function Get-UcTeamsVersionBatch {
-    Param(
+function Get-UcTeamsVersionBatch {
+    param(
         [Parameter(Mandatory = $true)]
         [string]$InputCSV,
         [string]$OutputPath,
         [switch]$ExportCSV,
         [System.Management.Automation.PSCredential]$Credential
     )
+    <#
+        .SYNOPSIS
+        Get Microsoft Teams Desktop Version from all computers in a csv file.
+
+        .DESCRIPTION
+        This function returns the installed Microsoft Teams desktop version for each user profile.
+
+        .PARAMETER InputCSV
+        CSV with the list of computers that we want to get the Teams Version
+
+        .PARAMETER OutputPath
+        Specify the output path
+
+        .PARAMETER ExportCSV
+        Export the output to a CSV file
+
+        .PARAMETER Credential
+        Specify the credential to be used to connect to the remote computers
+
+        .EXAMPLE
+        PS> Get-UcTeamsVersionBatch
+
+        .EXAMPLE
+        PS> Get-UcTeamsVersionBatch -InputCSV C:\Temp\ComputerList.csv -Credential $cred
+
+        .EXAMPLE
+        PS> Get-UcTeamsVersionBatch -InputCSV C:\Temp\ComputerList.csv -Credential $cred -ExportCSV
+    #>
+
     Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
     if (Test-Path $InputCSV) {
-        try{
+        try {
             $Computers = Import-Csv -Path $InputCSV
-        } catch {
+        }
+        catch {
             Write-Host ("Invalid CSV input file: " + $InputCSV) -ForegroundColor Red
             return
         }
@@ -73,7 +74,8 @@ Function Get-UcTeamsVersionBatch {
         else {
             return $outTeamsVersion 
         }
-    } else {
+    }
+    else {
         Write-Host ("Error: File not found " + $InputCSV) -ForegroundColor Red
     }
 }

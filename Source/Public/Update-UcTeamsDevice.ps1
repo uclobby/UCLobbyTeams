@@ -1,64 +1,6 @@
-<#
-.SYNOPSIS
-Update Microsoft Teams Devices
-
-.DESCRIPTION
-This function will send update commands to Teams Android Devices using MS Graph.
-
-Contributors: Eileen Beato, David Paulino and Bryan Kendrick
-
-Requirements:   Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
-                Microsoft Graph Scopes:
-                        "TeamworkDevice.ReadWrite.All","User.Read.All"
-
-.PARAMETER DeviceID
-Specify the Teams Admin Center Device ID that we want to update.
-
-.PARAMETER DeviceType
-Specifies a filter, valid options:
-    Phone - Teams Native Phones
-    MTRA - Microsoft Teams Room Running Android
-    Display - Microsoft Teams Displays 
-    Panel - Microsoft Teams Panels
-
-.PARAMETER UpdateType
-Allow to specify which time of update we want to do:
-		Firmware
-        TeamsClient
-        All
-
-.PARAMETER SoftwareVersion
-Allow to specify which version we want to update.
-
-.PARAMETER InputCSV
-When present will use this file as Input, we only need a column with Device Id. It supports files exported from Teams Admin Center (TAC).
-
-.PARAMETER Subnet
-Only available when using InputCSV and requires a “IP Address” column, it allows to only send updates to Teams Android devices within a subnet.
-Format examples:
-10.0.0.0/8
-192.168.0.0/24
-
-.PARAMETER OutputPath
-Allows to specify the path where we want to save the results. By default will save on current user Download.
-
-.PARAMETER ReportOnly
-Will read Teams Device Android versions info and generate a report
-
-.EXAMPLE 
-PS> Update-UcTeamsDevice
-
-.EXAMPLE 
-PS> Update-UcTeamsDevice -ReportOnly
-
-.EXAMPLE
-PS> Update-UcTeamsDevice -InputCSV C:\Temp\DevicesList_2023-04-20_15-19-00-UTC.csv
-
-#>
-
-Function Update-UcTeamsDevice {
+function Update-UcTeamsDevice {
     [cmdletbinding(SupportsShouldProcess)]
-    Param(
+    param(
         [ValidateSet("Firmware", "TeamsClient", "All")]
         [string]$UpdateType = "All",
         [ValidateSet("Phone", "MTRA", "Display", "Panel")]
@@ -70,14 +12,70 @@ Function Update-UcTeamsDevice {
         [string]$OutputPath,
         [switch]$ReportOnly
     )
-    $regExIPAddressSubnet = "^((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9]))\/(3[0-2]|[1-2]{1}[0-9]{1}|[1-9])$"
+    <#
+        .SYNOPSIS
+        Update Microsoft Teams Devices
 
-    if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.ReadWrite.All","User.Read.All") {
+        .DESCRIPTION
+        This function will send update commands to Teams Android Devices using MS Graph.
+
+        Contributors: Eileen Beato, David Paulino and Bryan Kendrick
+
+        Requirements:   Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
+                        Microsoft Graph Scopes:
+                            "TeamworkDevice.ReadWrite.All","User.Read.All"
+
+        .PARAMETER DeviceID
+        Specify the Teams Admin Center Device ID that we want to update.
+
+        .PARAMETER DeviceType
+        Specifies a filter, valid options:
+            Phone - Teams Native Phones
+            MTRA - Microsoft Teams Room Running Android
+            Display - Microsoft Teams Displays 
+            Panel - Microsoft Teams Panels
+
+        .PARAMETER UpdateType
+        Allow to specify which time of update we want to do:
+            Firmware
+            TeamsClient
+            All
+
+        .PARAMETER SoftwareVersion
+        Allow to specify which version we want to update.
+
+        .PARAMETER InputCSV
+        When present will use this file as Input, we only need a column with Device Id. It supports files exported from Teams Admin Center (TAC).
+
+        .PARAMETER Subnet
+        Only available when using InputCSV and requires a “IP Address” column, it allows to only send updates to Teams Android devices within a subnet.
+        Format examples:
+            10.0.0.0/8
+            192.168.0.0/24
+
+        .PARAMETER OutputPath
+        Allows to specify the path where we want to save the results. By default will save on current user Download.
+
+        .PARAMETER ReportOnly
+        Will read Teams Device Android versions info and generate a report
+
+        .EXAMPLE 
+        PS> Update-UcTeamsDevice
+
+        .EXAMPLE 
+        PS> Update-UcTeamsDevice -ReportOnly
+
+        .EXAMPLE
+        PS> Update-UcTeamsDevice -InputCSV C:\Temp\DevicesList_2023-04-20_15-19-00-UTC.csv
+    #>
+
+    $regExIPAddressSubnet = "^((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9]))\/(3[0-2]|[1-2]{1}[0-9]{1}|[1-9])$"
+    if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.ReadWrite.All", "User.Read.All") {
         $outTeamsDevices = [System.Collections.ArrayList]::new()
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         #Checking if the Subnet is valid
-        if($Subnet){
-            if(!($Subnet -match $regExIPAddressSubnet)){
+        if ($Subnet) {
+            if (!($Subnet -match $regExIPAddressSubnet)) {
                 Write-Host ("Error: Subnet " + $Subnet + " is invalid, please make sure the subnet is valid and in this format 10.0.0.0/8, 192.168.0.0/24") -ForegroundColor Red
                 return
             } 
@@ -251,11 +249,11 @@ Function Update-UcTeamsDevice {
         $graphRequests = [System.Collections.ArrayList]::new()
         foreach ($TeamsDevice in $TeamsDeviceList) {
 
-            if(($graphRequests.id -notcontains $TeamsDevice.currentuser.id) -and !([string]::IsNullOrEmpty($TeamsDevice.currentuser.id))) {
+            if (($graphRequests.id -notcontains $TeamsDevice.currentuser.id) -and !([string]::IsNullOrEmpty($TeamsDevice.currentuser.id))) {
                 $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                    id =  $TeamsDevice.currentuser.id
+                    id     = $TeamsDevice.currentuser.id
                     method = "GET"
-                    url = "/users/"+ $TeamsDevice.currentuser.id
+                    url    = "/users/" + $TeamsDevice.currentuser.id
                 }
                 [void]$graphRequests.Add($gRequestTmp)
             }
@@ -271,9 +269,9 @@ Function Update-UcTeamsDevice {
             }
 
             $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                id = $TeamsDevice.id+"-operations"
+                id     = $TeamsDevice.id + "-operations"
                 method = "GET"
-                url = "/teamwork/devices/"+$TeamsDevice.id+"/operations"
+                url    = "/teamwork/devices/" + $TeamsDevice.id + "/operations"
             }
             [void]$graphRequests.Add($gRequestTmp) 
 
@@ -306,7 +304,7 @@ Function Update-UcTeamsDevice {
                 #Currently we only consider Firmware and TeamsApp(teamsClient)
                 
                 #Firmware
-                if (($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -or $SoftwareVersion) -and ($UpdateType -in ("All","Firmware"))) {
+                if (($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -or $SoftwareVersion) -and ($UpdateType -in ("All", "Firmware"))) {
                     if (!($ReportOnly)) {
 
                         $requestHeader = New-Object 'System.Collections.Generic.Dictionary[string, string]'
@@ -314,9 +312,10 @@ Function Update-UcTeamsDevice {
                         $requestBody = New-Object 'System.Collections.Generic.Dictionary[string, string]'
                         $requestBody.Add("softwareType", "firmware")
                         
-                        if($SoftwareVersion){
+                        if ($SoftwareVersion) {
                             $requestBody.Add("softwareVersion", $SoftwareVersion)
-                        } else {
+                        }
+                        else {
                             $requestBody.Add("softwareVersion", $TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.availableVersion)
                         }
 
@@ -332,16 +331,17 @@ Function Update-UcTeamsDevice {
                 }
                 
                 #TeamsApp
-                if (($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -or $SoftwareVersion) -and ($UpdateType -in ("All","TeamsClient"))) {
+                if (($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -or $SoftwareVersion) -and ($UpdateType -in ("All", "TeamsClient"))) {
                     if (!($ReportOnly)) {
                         $requestHeader = New-Object 'System.Collections.Generic.Dictionary[string, string]'
                         $requestHeader.Add("Content-Type", "application/json")
 
                         $requestBody = New-Object 'System.Collections.Generic.Dictionary[string, string]'
                         $requestBody.Add("softwareType", "teamsClient")
-                        if($SoftwareVersion){
+                        if ($SoftwareVersion) {
                             $requestBody.Add("softwareVersion", $SoftwareVersion)
-                        } else {
+                        }
+                        else {
                             $requestBody.Add("softwareVersion", $TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.availableVersion)
                         }
                         $gRequestTmp = New-Object -TypeName PSObject -Property @{
@@ -365,11 +365,11 @@ Function Update-UcTeamsDevice {
                 if ($ReportOnly) {
                     $UpdateStatus = "Report Only:"
                     $pendingUpdate = $false
-                    if ($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All","Firmware"))) {
+                    if ($TeamsDeviceHealth.softwareUpdateHealth.firmwareSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All", "Firmware"))) {
                         $UpdateStatus += " Firmware Update Pending;"
                         $pendingUpdate = $true
                     }
-                    if ($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All","TeamsClient"))) {
+                    if ($TeamsDeviceHealth.softwareUpdateHealth.teamsClientSoftwareUpdateStatus.softwareFreshness.Equals("updateAvailable") -and ($UpdateType -in ("All", "TeamsClient"))) {
                         $UpdateStatus += " Teams App Update Pending;"
                         $pendingUpdate = $true
                     }
@@ -401,17 +401,17 @@ Function Update-UcTeamsDevice {
                         $UpdateStatus = "There is a Teams App update pending, please check the update status."
                     }
                 }
-                $userUPN = ($graphResponseExtra | Where-Object{$_.id -eq $TeamsDevice.currentuser.id}).body.userPrincipalName
+                $userUPN = ($graphResponseExtra | Where-Object { $_.id -eq $TeamsDevice.currentuser.id }).body.userPrincipalName
 
-                $TeamsDeviceOperations = ($graphResponseExtra | Where-Object{$_.id -eq ($TeamsDevice.id+"-operations")}).body.value
+                $TeamsDeviceOperations = ($graphResponseExtra | Where-Object { $_.id -eq ($TeamsDevice.id + "-operations") }).body.value
 
                 $LastUpdateStatus = ""
                 $LastUpdateInitiatedBy = ""
                 $LastUpdateModifiedDate = ""
 
                 #In this case we only need the last time we tried to udpdate.
-                foreach($TeamsDeviceOperation in $TeamsDeviceOperations){
-                    if($TeamsDeviceOperation.operationType -eq 'softwareUpdate'){
+                foreach ($TeamsDeviceOperation in $TeamsDeviceOperations) {
+                    if ($TeamsDeviceOperation.operationType -eq 'softwareUpdate') {
                         $LastUpdateStatus = $TeamsDeviceOperation.status
                         $LastUpdateInitiatedBy = $TeamsDeviceOperation.createdBy.user.displayName
                         $LastUpdateModifiedDate = $TeamsDeviceOperation.lastActionDateTime
@@ -440,9 +440,9 @@ Function Update-UcTeamsDevice {
                     UpdateStatus                    = $UpdateStatus
                     
                     #PreviousUpdate
-                    PreviousUpdateStatus = $LastUpdateStatus
-                    PreviousUpdateInitiatedBy = $LastUpdateInitiatedBy
-                    PreviousUpdateModifiedDate = $LastUpdateModifiedDate
+                    PreviousUpdateStatus            = $LastUpdateStatus
+                    PreviousUpdateInitiatedBy       = $LastUpdateInitiatedBy
+                    PreviousUpdateModifiedDate      = $LastUpdateModifiedDate
                 }
                 $TDObj.PSObject.TypeNames.Insert(0, 'UpdateTeamsDevice')
                 [void]$outTeamsDevices.Add($TDObj)

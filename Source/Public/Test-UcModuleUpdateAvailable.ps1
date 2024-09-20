@@ -1,12 +1,12 @@
-Function Test-UcModuleUpdateAvailable {
-    Param(
+function Test-UcModuleUpdateAvailable {
+    param(
         [Parameter(Mandatory = $true)]    
         [string]$ModuleName
     )
     try { 
         #Get the current loaded version
         $tmpCurrentVersion = (get-module $ModuleName | Sort-Object Version -Descending)
-        if ($tmpCurrentVersion){
+        if ($tmpCurrentVersion) {
             $currentVersion = $tmpCurrentVersion[0].Version.ToString()
         }
         

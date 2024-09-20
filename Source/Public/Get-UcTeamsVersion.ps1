@@ -1,41 +1,40 @@
-
-<#
-.SYNOPSIS
-Get Microsoft Teams Desktop Version
-
-.DESCRIPTION
-This function returns the installed Microsoft Teams desktop version for each user profile.
-
-.PARAMETER Path
-Specify the path with Teams Log Files
-
-.PARAMETER Computer
-Specify the remote computer
-
-.PARAMETER Credential
-Specify the credential to be used to connect to the remote computer
-
-.EXAMPLE
-PS> Get-UcTeamsVersion
-
-.EXAMPLE
-PS> Get-UcTeamsVersion -Path C:\Temp\
-
-.EXAMPLE
-PS> Get-UcTeamsVersion -Computer workstation124
-
-.EXAMPLE
-PS> $cred = Get-Credential
-PS> Get-UcTeamsVersion -Computer workstation124 -Credential $cred
-
-#>
-Function Get-UcTeamsVersion {
-    Param(
+function Get-UcTeamsVersion {
+    param(
         [string]$Path,
         [string]$Computer,
         [System.Management.Automation.PSCredential]$Credential,
         [switch]$SkipModuleCheck
     )
+    <#
+        .SYNOPSIS
+        Get Microsoft Teams Desktop Version
+
+        .DESCRIPTION
+        This function returns the installed Microsoft Teams desktop version for each user profile.
+
+        .PARAMETER Path
+        Specify the path with Teams Log Files
+
+        .PARAMETER Computer
+        Specify the remote computer
+
+        .PARAMETER Credential
+        Specify the credential to be used to connect to the remote computer
+
+        .EXAMPLE
+        PS> Get-UcTeamsVersion
+
+        .EXAMPLE
+        PS> Get-UcTeamsVersion -Path C:\Temp\
+
+        .EXAMPLE
+        PS> Get-UcTeamsVersion -Computer workstation124
+
+        .EXAMPLE
+        PS> $cred = Get-Credential
+        PS> Get-UcTeamsVersion -Computer workstation124 -Credential $cred
+    #>
+
     $regexVersion = '("version":")([0-9.]*)'
     $regexRing = '("ring":")(\w*)'
     $regexEnv = '("environment":")(\w*)'
@@ -48,7 +47,7 @@ Function Get-UcTeamsVersion {
     $regexNewVersion = '(DesktopApp: Version: )(\d{5}.\d{4}.\d{4}.\d{4})'
 
     $outTeamsVersion = [System.Collections.ArrayList]::new()
-    if(!$SkipModuleCheck){
+    if (!$SkipModuleCheck) {
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
     }
 
@@ -113,34 +112,36 @@ Function Get-UcTeamsVersion {
             $TeamsSettingsFiles = Get-ChildItem -Path $Path -Include "tma_settings.json" -Recurse
             foreach ($TeamsSettingsFile in $TeamsSettingsFiles) {
                 if (Test-Path $TeamsSettingsFile -ErrorAction SilentlyContinue) {
-                $NewTeamsSettings = Get-Content -Path $TeamsSettingsFile | ConvertFrom-Json
-                $tmpAccountID = $NewTeamsSettings.primary_user.accounts.account_id
-                try{
-                    $Version = ""
-                    $MostRecentTeamsLogFile = Get-ChildItem -Path $TeamsSettingsFile.Directory.FullName -Include "MSTeams_*.log" -Recurse | Sort-Object -Property CreationTime -Descending | Select-Object -First 1
-                    $TeamLogContents = Get-Content $MostRecentTeamsLogFile
-                    $RegexTemp = [regex]::Match($TeamLogContents, $regexNewVersion).captures.groups
-                    if ($RegexTemp.Count -ge 2) {
-                        $Version = $RegexTemp[2].value
+                    $NewTeamsSettings = Get-Content -Path $TeamsSettingsFile | ConvertFrom-Json
+                    $tmpAccountID = $NewTeamsSettings.primary_user.accounts.account_id
+                    try {
+                        $Version = ""
+                        $MostRecentTeamsLogFile = Get-ChildItem -Path $TeamsSettingsFile.Directory.FullName -Include "MSTeams_*.log" -Recurse | Sort-Object -Property CreationTime -Descending | Select-Object -First 1
+                        $TeamLogContents = Get-Content $MostRecentTeamsLogFile
+                        $RegexTemp = [regex]::Match($TeamLogContents, $regexNewVersion).captures.groups
+                        if ($RegexTemp.Count -ge 2) {
+                            $Version = $RegexTemp[2].value
+                        }
                     }
-                } catch{}
+                    catch {}
 
-                $TeamsVersion = New-Object -TypeName PSObject -Property @{
-                    WindowsUser      = "NA"
-                    TeamsUser        =  $NewTeamsSettings.primary_user.accounts.account_upn
-                    Type             = "New Teams"
-                    Version          = $Version
-                    Ring             = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.ring
-                    Environment      = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.environment
-                    CloudEnvironment = $NewTeamsSettings.primary_user.accounts.cloud
-                    Path             = $TeamsSettingsFile.Directory.FullName
-                }
-                $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersionFromPath')
-                [void]$outTeamsVersion.Add($TeamsVersion)
+                    $TeamsVersion = New-Object -TypeName PSObject -Property @{
+                        WindowsUser      = "NA"
+                        TeamsUser        = $NewTeamsSettings.primary_user.accounts.account_upn
+                        Type             = "New Teams"
+                        Version          = $Version
+                        Ring             = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.ring
+                        Environment      = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.environment
+                        CloudEnvironment = $NewTeamsSettings.primary_user.accounts.cloud
+                        Path             = $TeamsSettingsFile.Directory.FullName
+                    }
+                    $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersionFromPath')
+                    [void]$outTeamsVersion.Add($TeamsVersion)
                 }
             }
             #endregion
-        } else {
+        }
+        else {
             Write-Error -Message ("Invalid Path, please check if path: " + $path + " is correct and exists.")
         }
     }
@@ -150,9 +151,10 @@ Function Get-UcTeamsVersion {
             $RemotePath = "\\" + $Computer + "\C$\Users"
             $ComputerName = $Computer
             if ($Credential) {
-                if ($Computer.IndexOf('.') -gt 0){
-                    $PSDriveName = $Computer.Substring(0,$Computer.IndexOf('.')) + "_TmpTeamsVersion"
-                } else {
+                if ($Computer.IndexOf('.') -gt 0) {
+                    $PSDriveName = $Computer.Substring(0, $Computer.IndexOf('.')) + "_TmpTeamsVersion"
+                }
+                else {
                     $PSDriveName = $Computer + "_TmpTeamsVersion"
                 }
                 New-PSDrive -Root $RemotePath -Name $PSDriveName -PSProvider FileSystem -Credential $Credential | Out-Null
@@ -178,9 +180,10 @@ Function Get-UcTeamsVersion {
             else {
                 $ProfilePath = $UserProfile.ProfileImagePath
                 #20231013 Added exception handeling, only known case is when a windows profile was created when the machine was joined to a previous domain.
-                try{
+                try {
                     $ProfileName = (New-Object System.Security.Principal.SecurityIdentifier($UserProfile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
-                } catch {
+                }
+                catch {
                     $ProfileName = "Unknown Windows User"
                 }
             }
@@ -215,7 +218,7 @@ Function Get-UcTeamsVersion {
                 $TeamsInstallTimePath = $ProfilePath + "\AppData\Roaming\Microsoft\Teams\installTime.txt"
                 #20240228 - In some cases the install file can be missing.
                 $tmpInstallDate = ""
-                if(Test-Path $TeamsInstallTimePath -ErrorAction SilentlyContinue){
+                if (Test-Path $TeamsInstallTimePath -ErrorAction SilentlyContinue) {
                     $InstallDateStr = Get-Content ($ProfilePath + "\AppData\Roaming\Microsoft\Teams\installTime.txt")
                     $tmpInstallDate = [Datetime]::ParseExact($InstallDateStr, 'M/d/yyyy', $null) | Get-Date -Format $currentDateFormat
                 }
@@ -242,15 +245,15 @@ Function Get-UcTeamsVersion {
             if (Test-Path $NewTeamsSettingPath -ErrorAction SilentlyContinue) {
                 $NewTeamsSettings = Get-Content -Path $NewTeamsSettingPath | ConvertFrom-Json
                 $tmpAccountID = $NewTeamsSettings.primary_user.accounts.account_id
-                if($Computer){
+                if ($Computer) {
                     $newTeamsLocation = Get-ChildItem -Path ( $RemotePath + "\..\Program Files\Windowsapps" ) -Filter "ms-teams.exe" -Recurse -Depth 1 | Sort-Object -Property CreationTime -Descending | Select-Object -First 1                    
-                } else {
+                }
+                else {
                     #20240103 - Using Get-AppPackage drops the requirement to run with Administrative Rights
-                    #$newTeamsLocation = Get-ChildItem -Path "C:\Program Files\Windowsapps" -Filter "ms-teams.exe" -Recurse -Depth 1 | Sort-Object -Property CreationTime -Descending | Select-Object -First 1
                     $newTeamsInstallPath = (Get-AppPackage MSTeams).InstallLocation + ".\ms-teams.exe"
                     $newTeamsLocation = Get-ItemProperty -Path ($newTeamsInstallPath)
                 }
-                if(Test-Path -Path $newTeamsLocation.FullName -ErrorAction SilentlyContinue){
+                if (Test-Path -Path $newTeamsLocation.FullName -ErrorAction SilentlyContinue) {
                     $TeamsVersion = New-Object -TypeName PSObject -Property @{
                         Computer         = $ComputerName
                         Profile          = $ProfileName

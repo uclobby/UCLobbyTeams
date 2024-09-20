@@ -10,7 +10,8 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcM365Domains
 <br/>Get-UcM365TenantId 
 <br/>Get-UcM365LicenseAssignment
-<br/>Test-UcTeamsOnlyDNSRequirements
+
+<br/>Get-UcOneDriveWithMultiplePermissions
 
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
@@ -19,8 +20,9 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcTeamsVersionBatch
 
 <br/>Get-UcTeamsDevice
-<br>Update-UcTeamsDevice
+<br/>Update-UcTeamsDevice
 
+<br/>Test-UcTeamsOnlyDNSRequirements
 <br/>Test-UcTeamsDevicesConditionalAccessPolicy
 <br/>Test-UcTeamsDevicesEnrollmentPolicy
 <br/>Test-UcTeamsDevicesCompliancePolicy
@@ -33,51 +35,63 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.6.0 - 2024/09/20
+<ul>
+<li>Get-UcM365LicenseAssignment
+  <br/>Feature: Added switch DuplicateServicePlansOnly, this will generate an output with users with duplicate service plans.
+</li>
+<li>Test-UcTeamsDevicesEnrollmentPolicy 
+  <br/>Feature: Added support for Android Open Source Project (AOSP) Enrollment Profiles.
+</li>
+<li>Get-UcOneDriveWithMultiplePermissions
+  <br/>New cmdlet: Generate a report with OneDrive's that have more than a user with access permissions.
+</li>
+</ul>
 <br/>0.5.1 - 2024/05/08
 <ul>
 <li>Test-UcTeamsDevicesCompliancePolicy
   <br/>Fix: Only the applicable settings will be checked for Android AOSP compliance policies.
 </li>
 <li>Get-UcTeamsDevice
-<br/>Change: Added ConnectionStatus and ConnectionLastActivity in the detailed output.
-<br/>Change: Display date and time in the current timezone for WhenCreated, WhenChanged, LastHistoryModifiedDate, ConfigurationCreateDate and ConfigurationLastModifiedDate.
+  <br/>Change: Added ConnectionStatus and ConnectionLastActivity in the detailed output.
+  <br/>Change: Display date and time in the current system time zone for WhenCreated, WhenChanged, LastHistoryModifiedDate, ConfigurationCreateDate and ConfigurationLastModifiedDate.
 </li>
 </ul>
 <br/>0.5.0 - 2024/03/19
 <ul>
 <li>Test-UcTeamsOnlyDNSRequirements
-<br/>New cmdlet: Check if the DNS entries that were previously required are still configured.
+  <br/>New cmdlet: Check if the DNS entries that were previously required are still configured.
 </li>
 <li>Get-UcM365Domains
-<br/>Fatrure: Added support fro GCC High tenants.
+  <br/>Feature: Added support for GCC High tenants.
 </li>
 </ul>
 <br/>0.4.4 - 2024/03/14
 <ul>
 <li>Get-UcTeamsVersion
-<br/>Feature: Add support for New Teams on a Remote Computer.
-<br/>Feature: Add suport for New Teams from Path
-<br/>Feature: Add column Type which will have New Teams or Classic Teams.
-<br/>Change: Removed column Region.
-<br/>Change: Use Get-AppPackage to determine MS Teams Instalation Path and remove the requirement of administative rights.
-<br/>Fix: In some scenarios the install date was missing and generating an error.
+  <br/>Feature: Add support for New Teams on a Remote Computer.
+  <br/>Feature: Add support for New Teams from Path
+  <br/>Feature: Add column Type which will have New Teams or Classic Teams.
+  <br/>Change: Removed column Region.
+  <br/>Change: Use Get-AppPackage to determine MS Teams Installation Path and remove the requirement of administrative rights.
+  <br/>Fix: In some scenarios the install date was missing and generating an error.
 </li>
 <li>The following cmdlets were removed after webdir.online.lync.com retirement:
-<br/>Get-UcTeamsForest
-<br/>Test-UcTeamsOnlyModeReadiness
+  <br/>Get-UcTeamsForest
+  <br/>Test-UcTeamsOnlyModeReadiness
 </li>
 </ul>
 <br/>0.4.3 - 2024/02/22
 <ul>
 <li>Update-UcTeamsDevice
-<br/>Feature: Added parameter SoftwareVersion to specify the version.
-<br/>Change: If only one device is updated then the output will be on PowerShell window and not generate an output file
+  <br/>Feature: Added parameter SoftwareVersion to specify the version.
+  <br/>Change: If only one device is updated then the output will be on PowerShell window and not generate an output file.
 </li>
 </ul>
 <br/>0.4.2 - 2023/11/17
 <ul>
 <li>Get-UcTeamsVersion
-<br/>Feature: Add support for new Teams version.
+  <br/>Feature: Add support for new Teams version.
 </li>
 <li>Test-UcTeamsDevicesEnrollmentPolicy
   <br/>Fix: Output was empty when only -Detailed Switch was used.
@@ -87,8 +101,8 @@ Please use the PowerShell Gallery to install this module:
 <ul>
 <li>Get-UcM365LicenseAssignment
   <br/>Feature: Added Parameter to filter for a specific SKU, only supports SKU Part Number and SKU Product Name (if UseFriendlyName is use).
-  <br/>Change: OutputPath will be for both report and "Product names and service plan identifiers for licensing.csv"
-  <br/>Change: Report will included a column with all service plans, when empty the license doesnt have the service, and "On/Off" will be the status of the assigned license service plan.
+  <br/>Change: OutputPath will be for both report and "Product names and service plan identifiers for licensing.csv".
+  <br/>Change: Report will included a column with all service plans, when empty the license doesn't have the service, and "On/Off" will be the status of the assigned license service plan.
   <br/>Change: Added execution time to the output.
   <br/>Fix: Issue when generating a report on a tenant with a large number of users.
 </li>

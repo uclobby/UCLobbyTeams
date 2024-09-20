@@ -1,39 +1,32 @@
-function ConvertTo-IPv4MaskString {
+function Test-UcIPaddressInSubnet {
     <#
-    .SYNOPSIS
-    Converts a number of bits (0-32) to an IPv4 network mask string (e.g., "255.255.255.0").
-  
-    .DESCRIPTION
-    Converts a number of bits (0-32) to an IPv4 network mask string (e.g., "255.255.255.0").
-  
-    .PARAMETER MaskBits
-    Specifies the number of bits in the mask.
+        .SYNOPSIS
+        Check if an IP address is part of an Subnet.
 
-    Credits to: Bill Stewart - https://www.itprotoday.com/powershell/working-ipv4-addresses-powershell  
+        .DESCRIPTION
+        Returns true if the given IP address is part of the subnet, false for not or invalid ip address.
+    
+        Contributors: David Paulino
+
+        .PARAMETER IPAddress
+        IP Address that we want to confirm that belongs to a range.
+
+        .PARAMETER Subnet
+        Subnet in the IPaddress/SubnetMaskBits.
+
+        .EXAMPLE 
+        PS> Test-UcIPaddressInSubnet -IPAddress 192.168.0.1 -Subnet 192.168.0.0/24
 
     #>
     param(
-        [parameter(Mandatory = $true)]
-        [ValidateRange(0, 32)]
-        [Int] $MaskBits
-    )
-    $mask = ([Math]::Pow(2, $MaskBits) - 1) * [Math]::Pow(2, (32 - $MaskBits))
-    $bytes = [BitConverter]::GetBytes([UInt32] $mask)
-    (($bytes.Count - 1)..0 | ForEach-Object { [String] $bytes[$_] }) -join "."
-}
-
-Function Test-UcIPaddressInSubnet {
-
-    param(
+        [Parameter(mandatory = $true)]    
         [string]$IPAddress,
+        [Parameter(mandatory = $true)]
         [string]$Subnet
     )
-
     $regExIPAddressSubnet = "^((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9]))\/(3[0-2]|[1-2]{1}[0-9]{1}|[1-9])$"
-
     try {
-        $Subnet -match $regExIPAddressSubnet | Out-Null
-
+        [void]($Subnet -match $regExIPAddressSubnet)
         $IPSubnet = [ipaddress]$Matches[1]
         $tmpIPAddress = [ipaddress]$IPAddress
         $subnetMask = ConvertTo-IPv4MaskString $Matches[6]

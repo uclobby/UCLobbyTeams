@@ -1,30 +1,23 @@
-<#
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
-#>
+function Get-UcArch {
+    param(
+        [string]$FilePath
+    )
+    <#
+        .SYNOPSIS
+        Funcion to get the Architecture from .exe file
 
-<#
-.SYNOPSIS
-Funcion to get the Architecture from .exe file
+        .DESCRIPTION
+        Based on PowerShell script Get-ExecutableType.ps1 by David Wyatt, please check the complete script in:
 
-.DESCRIPTION
-Based on PowerShell script Get-ExecutableType.ps1 by David Wyatt, please check the complete script in:
+        Identify 16-bit, 32-bit and 64-bit executables with PowerShell
+        https://gallery.technet.microsoft.com/scriptcenter/Identify-16-bit-32-bit-and-522eae75
 
-Identify 16-bit, 32-bit and 64-bit executables with PowerShell
-https://gallery.technet.microsoft.com/scriptcenter/Identify-16-bit-32-bit-and-522eae75
+        .PARAMETER FilePath
+        Specifies the executable full file path.
 
-.PARAMETER FilePath
-Specifies the executable full file path.
-
-.EXAMPLE
-PS> Get-UcArch -FilePath C:\temp\example.exe
-#>
-Function Get-UcArch([string]$FilePath) {
+        .EXAMPLE
+        PS> Get-UcArch -FilePath C:\temp\example.exe
+    #>
     try {
         $stream = New-Object System.IO.FileStream(
             $FilePath,

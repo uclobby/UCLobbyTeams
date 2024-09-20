@@ -1,21 +1,22 @@
-<#
-.SYNOPSIS
-Get Microsoft 365 Tenant Id 
-
-.DESCRIPTION
-This function returns the Tenant ID associated with a domain that is part of a Microsoft 365 Tenant.
-
-.PARAMETER Domain
-Specifies a domain registered with Microsoft 365
-
-.EXAMPLE
-PS> Get-UcM365TenantId -Domain uclobby.com
-#>
-Function Get-UcM365TenantId {
-    Param(
+function Get-UcM365TenantId {
+    param(
         [Parameter(Mandatory = $true)]
         [string]$Domain
     )
+    <#
+        .SYNOPSIS
+        Get Microsoft 365 Tenant Id 
+
+        .DESCRIPTION
+        This function returns the Tenant ID associated with a domain that is part of a Microsoft 365 Tenant.
+
+        .PARAMETER Domain
+        Specifies a domain registered with Microsoft 365
+
+        .EXAMPLE
+        PS> Get-UcM365TenantId -Domain uclobby.com
+    #>
+
     $regexTenantID = "^(.*@)(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})$"
     $regexOnMicrosoftDomain = "^(.*@)(?!.*mail)(.*.onmicrosoft.com)$"
 
@@ -23,8 +24,8 @@ Function Get-UcM365TenantId {
         Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
     }
-    catch [System.Net.Http.HttpRequestException]{
-        if ($PSItem.Exception.Response.StatusCode -eq "BadRequest"){
+    catch [System.Net.Http.HttpRequestException] {
+        if ($PSItem.Exception.Response.StatusCode -eq "BadRequest") {
             Write-Error "The domain $Domain is not part of a Microsoft 365 Tenant."
         }
         else {
@@ -48,10 +49,11 @@ Function Get-UcM365TenantId {
         }
     }
     #Multi Geo will have multiple OnMicrosoft Domains
-    foreach($OnMicrosoftDomain in $OnMicrosoftDomains){
-        if($TenantID -and $OnMicrosoftDomain){
+    foreach ($OnMicrosoftDomain in $OnMicrosoftDomains) {
+        if ($TenantID -and $OnMicrosoftDomain) {
             $M365TidPSObj = [PSCustomObject]@{ TenantID = $TenantID
-                OnMicrosoftDomain = $OnMicrosoftDomain}
+                OnMicrosoftDomain                       = $OnMicrosoftDomain
+            }
             $M365TidPSObj.PSObject.TypeNames.Insert(0, 'M365TenantId')
             [void]$output.Add($M365TidPSObj)
         }

@@ -1,5 +1,5 @@
-Function Invoke-UcMgGraphBatch {
-    Param(
+function Invoke-UcMgGraphBatch {
+    param(
         [object]$Requests,
         [ValidateSet("beta", "v1.0")]
         [string]$MgProfile,

@@ -1,52 +1,5 @@
-<#
-.SYNOPSIS
-Validate which Intune Compliance policies are supported by Microsoft Teams Android Devices
-
-.DESCRIPTION
-This function will validate each setting in the Intune Compliance Policy to make sure they are in line with the supported settings:
-
-    https://docs.microsoft.com/en-us/microsoftteams/rooms/supported-ca-and-compliance-policies?tabs=phones#supported-device-compliance-policies
-
-Contributors: Traci Herr, David Paulino
-
-Requirements: Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
-
-.PARAMETER Detailed
-Displays test results for unsupported settings in each Intune Compliance Policy
-
-.PARAMETER All
-Will check all Intune Compliance policies independently if they are assigned to a Group(s)
-
-.PARAMETER IncludeSupported
-Displays results for all settings in each Intune Compliance Policy
-
-.PARAMETER PolicyID
-Specifies a Policy ID that will be checked if is supported by Microsoft Teams Android Devices
-
-.PARAMETER PolicyName
-Specifies a Policy Name that will be checked if is supported by Microsoft Teams Android Devices
-
-.PARAMETER UserUPN
-Specifies a UserUPN that we want to check for applied compliance policies
-
-.PARAMETER DeviceID
-Specifies DeviceID that we want to check for applied compliance policies
-
-.PARAMETER ExportCSV
-When present will export the detailed results to a CSV file. By defautl will save the file under the current user downloads, unless we specify the OutputPath.
-
-.PARAMETER OutputPath
-Allows to specify the path where we want to save the results.
-
-.EXAMPLE 
-PS> Test-UcTeamsDevicesCompliancePolicy
-
-.EXAMPLE 
-PS> Test-UcTeamsDevicesCompliancePolicy -Detailed
-
-#>
-Function Test-UcTeamsDevicesCompliancePolicy {
-    Param(
+function Test-UcTeamsDevicesCompliancePolicy {
+    param(
         [switch]$Detailed,
         [switch]$All,
         [switch]$IncludeSupported,
@@ -57,6 +10,52 @@ Function Test-UcTeamsDevicesCompliancePolicy {
         [switch]$ExportCSV,
         [string]$OutputPath
     )
+    <#
+        .SYNOPSIS
+        Validate which Intune Compliance policies are supported by Microsoft Teams Android Devices
+
+        .DESCRIPTION
+        This function will validate each setting in the Intune Compliance Policy to make sure they are in line with the supported settings:
+
+            https://docs.microsoft.com/en-us/microsoftteams/rooms/supported-ca-and-compliance-policies?tabs=phones#supported-device-compliance-policies
+
+        Contributors: Traci Herr, David Paulino
+
+        Requirements: Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
+
+        .PARAMETER Detailed
+        Displays test results for unsupported settings in each Intune Compliance Policy
+
+        .PARAMETER All
+        Will check all Intune Compliance policies independently if they are assigned to a Group(s)
+
+        .PARAMETER IncludeSupported
+        Displays results for all settings in each Intune Compliance Policy
+
+        .PARAMETER PolicyID
+        Specifies a Policy ID that will be checked if is supported by Microsoft Teams Android Devices
+
+        .PARAMETER PolicyName
+        Specifies a Policy Name that will be checked if is supported by Microsoft Teams Android Devices
+
+        .PARAMETER UserUPN
+        Specifies a UserUPN that we want to check for applied compliance policies
+
+        .PARAMETER DeviceID
+        Specifies DeviceID that we want to check for applied compliance policies
+
+        .PARAMETER ExportCSV
+        When present will export the detailed results to a CSV file. By defautl will save the file under the current user downloads, unless we specify the OutputPath.
+
+        .PARAMETER OutputPath
+        Allows to specify the path where we want to save the results.
+
+        .EXAMPLE 
+        PS> Test-UcTeamsDevicesCompliancePolicy
+
+        .EXAMPLE 
+        PS> Test-UcTeamsDevicesCompliancePolicy -Detailed
+    #>
 
     $connectedMSGraph = $false
     $CompliancePolicies = $null
@@ -147,7 +146,7 @@ Function Test-UcTeamsDevicesCompliancePolicy {
             }
             #TO DO: We should only get display names from assigned groups
             $Groups = New-Object 'System.Collections.Generic.Dictionary[string, string]'
-            $p=0
+            $p = 0
             $policyCount = $CompliancePolicies.Count
             foreach ($CompliancePolicy in $CompliancePolicies) {
                 $p++
@@ -709,39 +708,39 @@ Function Test-UcTeamsDevicesCompliancePolicy {
                         
                         if ($CompliancePolicy."@odata.type" -in $SupportedAndroidCompliancePolicies) {
 
-                             #region 3: Device Health > Rooted devices
-                             $ID = 3
-                             $Setting = "securityBlockJailbrokenDevices"
-                             $SettingDescription = "Device Health > Rooted devices"
-                             $SettingValue = "Not Configured"
-                             $Comment = ""
-                             if ($CompliancePolicy.securityBlockJailbrokenDevices) {
-                                 $Status = "Warning"
-                                 $SettingValue = "Block"
-                                 $Comment = "This setting can cause sign in issues."
-                                 $PolicyWarnings++
-                             }
-                             else {
-                                 $Status = "Supported"
-                             }
-                             $SettingPSObj = [PSCustomObject]@{
-                                 PolicyName            = $CompliancePolicy.displayName
-                                 PolicyType            = $CPType
-                                 Setting               = $Setting
-                                 Value                 = $SettingValue
-                                 TeamsDevicesStatus    = $Status 
-                                 Comment               = $Comment
-                                 SettingDescription    = $SettingDescription
-                                 AssignedToGroup       = $outAssignedToGroup
-                                 ExcludedFromGroup     = $outExcludedFromGroup 
-                                 AssignedToGroupList   = $AssignedToGroup
-                                 ExcludedFromGroupList = $ExcludedFromGroup
-                                 PolicyID              = $CompliancePolicy.id
-                                 ID                    = $ID
-                             }
-                             $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
-                             [void]$output.Add($SettingPSObj)
-                             #endregion
+                            #region 3: Device Health > Rooted devices
+                            $ID = 3
+                            $Setting = "securityBlockJailbrokenDevices"
+                            $SettingDescription = "Device Health > Rooted devices"
+                            $SettingValue = "Not Configured"
+                            $Comment = ""
+                            if ($CompliancePolicy.securityBlockJailbrokenDevices) {
+                                $Status = "Warning"
+                                $SettingValue = "Block"
+                                $Comment = "This setting can cause sign in issues."
+                                $PolicyWarnings++
+                            }
+                            else {
+                                $Status = "Supported"
+                            }
+                            $SettingPSObj = [PSCustomObject]@{
+                                PolicyName            = $CompliancePolicy.displayName
+                                PolicyType            = $CPType
+                                Setting               = $Setting
+                                Value                 = $SettingValue
+                                TeamsDevicesStatus    = $Status 
+                                Comment               = $Comment
+                                SettingDescription    = $SettingDescription
+                                AssignedToGroup       = $outAssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                PolicyID              = $CompliancePolicy.id
+                                ID                    = $ID
+                            }
+                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
+                            [void]$output.Add($SettingPSObj)
+                            #endregion
 
                             #region 10: System Security > Encryption > Require encryption of data storage on device.
                             $ID = 10

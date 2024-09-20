@@ -1,53 +1,5 @@
-<#
-.SYNOPSIS
-Validate which Conditional Access policies are supported by Microsoft Teams Android Devices
-
-.DESCRIPTION
-This function will validate each setting in a Conditional Access Policy to make sure they are in line with the supported settings:
-
-    https://docs.microsoft.com/microsoftteams/rooms/supported-ca-and-compliance-policies?tabs=phones#conditional-access-policies"
-
-Contributors: Traci Herr, David Paulino
-
-Requirements: Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
-
-.PARAMETER Detailed
-Displays test results for all settings in each Conditional Access Policy
-
-.PARAMETER All
-Will check all Conditional Access policies independently if they are assigned to a Group(s) or to Teams 
-
-.PARAMETER IncludeSupported
-Displays results for all settings in each  Conditional Access Policy
-
-.PARAMETER UserUPN
-Specifies a UserUPN that we want to check for applied Conditional Access policies
-
-.PARAMETER ExportCSV
-When present will export the detailed results to a CSV file. By defautl will save the file under the current user downloads, unless we specify the OutputPath.
-
-.PARAMETER OutputPath
-Allows to specify the path where we want to save the results.
-
-.EXAMPLE 
-PS> Test-UcTeamsDevicesConditionalAccessPolicy
-
-.EXAMPLE 
-PS> Test-UcTeamsDevicesConditionalAccessPolicy -All
-
-.EXAMPLE 
-PS> Test-UcTeamsDevicesConditionalAccessPolicy -Detailed
-
-.EXAMPLE 
-PS> Test-UcTeamsDevicesConditionalAccessPolicy -Detailed -IncludedSupported
-
-.EXAMPLE 
-PS> Test-UcTeamsDevicesConditionalAccessPolicy -UserUPN
-
-#>
-
-Function Test-UcTeamsDevicesConditionalAccessPolicy {
-    Param(
+function Test-UcTeamsDevicesConditionalAccessPolicy {
+    param(
         [switch]$Detailed,
         [switch]$All,
         [switch]$IncludeSupported,
@@ -55,6 +7,52 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
         [switch]$ExportCSV,
         [string]$OutputPath
     )
+    <#
+        .SYNOPSIS
+        Validate which Conditional Access policies are supported by Microsoft Teams Android Devices
+
+        .DESCRIPTION
+        This function will validate each setting in a Conditional Access Policy to make sure they are in line with the supported settings:
+
+            https://docs.microsoft.com/microsoftteams/rooms/supported-ca-and-compliance-policies?tabs=phones#conditional-access-policies"
+
+        Contributors: Traci Herr, David Paulino
+
+        Requirements: Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
+
+        .PARAMETER Detailed
+        Displays test results for all settings in each Conditional Access Policy
+
+        .PARAMETER All
+        Will check all Conditional Access policies independently if they are assigned to a Group(s) or to Teams 
+
+        .PARAMETER IncludeSupported
+        Displays results for all settings in each  Conditional Access Policy
+
+        .PARAMETER UserUPN
+        Specifies a UserUPN that we want to check for applied Conditional Access policies
+
+        .PARAMETER ExportCSV
+        When present will export the detailed results to a CSV file. By defautl will save the file under the current user downloads, unless we specify the OutputPath.
+
+        .PARAMETER OutputPath
+        Allows to specify the path where we want to save the results.
+
+        .EXAMPLE 
+        PS> Test-UcTeamsDevicesConditionalAccessPolicy
+
+        .EXAMPLE 
+        PS> Test-UcTeamsDevicesConditionalAccessPolicy -All
+
+        .EXAMPLE 
+        PS> Test-UcTeamsDevicesConditionalAccessPolicy -Detailed
+
+        .EXAMPLE 
+        PS> Test-UcTeamsDevicesConditionalAccessPolicy -Detailed -IncludedSupported
+
+        .EXAMPLE 
+        PS> Test-UcTeamsDevicesConditionalAccessPolicy -UserUPN
+    #>
 
     $GraphURI_Users = "https://graph.microsoft.com/v1.0/users"
     $GraphURI_Groups = "https://graph.microsoft.com/v1.0/groups"
@@ -117,16 +115,17 @@ Function Test-UcTeamsDevicesConditionalAccessPolicy {
             }
 
             $Groups = New-Object 'System.Collections.Generic.Dictionary[string, string]'
-            try{
-            Write-Progress -Activity "Test-UcTeamsDevicesConditionalAccessPolicy" -Status "Fetching Service Principals details."
-            $ServicePrincipals = Get-MgServicePrincipal -Select AppId, DisplayName -All
-            } catch {}
+            try {
+                Write-Progress -Activity "Test-UcTeamsDevicesConditionalAccessPolicy" -Status "Fetching Service Principals details."
+                $ServicePrincipals = Get-MgServicePrincipal -Select AppId, DisplayName -All
+            }
+            catch {}
 
-            $p=0
+            $p = 0
             $policyCount = $ConditionalAccessPolicies.Count
             foreach ($ConditionalAccessPolicy in $ConditionalAccessPolicies) {
                 $p++
-                Write-Progress -Activity "Test-UcTeamsDevicesConditionalAccessPolicy" -Status ("Checking policy " +  $ConditionalAccessPolicy.displayName + " - $p of $policyCount")
+                Write-Progress -Activity "Test-UcTeamsDevicesConditionalAccessPolicy" -Status ("Checking policy " + $ConditionalAccessPolicy.displayName + " - $p of $policyCount")
                 $AssignedToGroup = [System.Collections.ArrayList]::new()
                 $ExcludedFromGroup = [System.Collections.ArrayList]::new()
                 $AssignedToUserCount = 0

@@ -1,36 +1,36 @@
-
-<#
-.SYNOPSIS
-Get Users Email Address that are in a Team
-
-.DESCRIPTION
-This function returns a list of users email address that are part of a Team.
-
-.PARAMETER TeamName
-Specifies Team Name
-
-.PARAMETER Role
-Specifies which roles to filter (Owner, User, Guest)
-
-.EXAMPLE
-PS> Get-UcTeamUsersEmail
-
-.EXAMPLE
-PS> Get-UcTeamUsersEmail -TeamName "Marketing"
-
-.EXAMPLE
-PS> Get-UcTeamUsersEmail -Role "Guest"
-
-.EXAMPLE
-PS> Get-UcTeamUsersEmail -TeamName "Marketing" -Role "Guest"
-#>
-Function Get-UcTeamUsersEmail {
+function Get-UcTeamUsersEmail {
     [cmdletbinding(SupportsShouldProcess)]
-    Param(
+    param(
         [string]$TeamName,
         [ValidateSet("Owner", "User", "Guest")] 
         [string]$Role
     )
+    <#
+        .SYNOPSIS
+        Get Users Email Address that are in a Team
+
+        .DESCRIPTION
+        This function returns a list of users email address that are part of a Team.
+
+        .PARAMETER TeamName
+        Specifies Team Name
+
+        .PARAMETER Role
+        Specifies which roles to filter (Owner, User, Guest)
+
+        .EXAMPLE
+        PS> Get-UcTeamUsersEmail
+
+        .EXAMPLE
+        PS> Get-UcTeamUsersEmail -TeamName "Marketing"
+
+        .EXAMPLE
+        PS> Get-UcTeamUsersEmail -Role "Guest"
+
+        .EXAMPLE
+        PS> Get-UcTeamUsersEmail -TeamName "Marketing" -Role "Guest"
+    #>
+
     $output = [System.Collections.ArrayList]::new()
     Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
     if ($TeamName) {

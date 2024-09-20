@@ -1,21 +1,21 @@
-<#
-.SYNOPSIS
-Get Microsoft 365 Domains from a Tenant
-
-.DESCRIPTION
-This function returns a list of domains that are associated with a Microsoft 365 Tenant.
-
-.PARAMETER Domain
-Specifies a domain registered with Microsoft 365
-
-.EXAMPLE
-PS> Get-UcM365Domains -Domain uclobby.com
-#>
-Function Get-UcM365Domains {
-    Param(
+function Get-UcM365Domains {
+    param(
         [Parameter(Mandatory = $true)]
         [string]$Domain
     )
+    <#
+        .SYNOPSIS
+        Get Microsoft 365 Domains from a Tenant
+
+        .DESCRIPTION
+        This function returns a list of domains that are associated with a Microsoft 365 Tenant.
+
+        .PARAMETER Domain
+        Specifies a domain registered with Microsoft 365
+
+        .EXAMPLE
+        PS> Get-UcM365Domains -Domain uclobby.com
+    #>
     $regex = "^(.*@)(.*[.].*)$"
     $outDomains = [System.Collections.ArrayList]::new()
     try {
@@ -33,13 +33,14 @@ Function Get-UcM365Domains {
     }
     catch {
         #20240318 - Support for GCC High tenants.
-        try{
+        try {
             $AllowedAudiences = Invoke-WebRequest -Uri ("https://login.microsoftonline.us/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
-        } catch {
+        }
+        catch {
             Write-Warning "Unknown error while checking domain: $Domain"
         }
     }
-    try{
+    try {
         foreach ($AllowedAudience in $AllowedAudiences) {
             $temp = [regex]::Match($AllowedAudience , $regex).captures.groups
             if ($temp.count -ge 2) {
@@ -49,7 +50,8 @@ Function Get-UcM365Domains {
                 $outDomains.Add($tempObj) | Out-Null
             }
         }
-    } catch {
+    }
+    catch {
         Write-Warning "Unknown error while checking domain: $Domain"
     }
     return $outDomains
