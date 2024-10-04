@@ -69,7 +69,7 @@ function Get-UcTeamsDevice {
     }
 
     if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.Read.All,User.Read.All" -AltScopes ("TeamworkDevice.Read.All","Directory.Read.All")) {
-        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         $graphRequests = [System.Collections.ArrayList]::new()
         $tmpFileName = "MSTeamsDevices_" + $Filter + "_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
         switch ($filter) {

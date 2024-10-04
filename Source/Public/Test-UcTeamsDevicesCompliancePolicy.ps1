@@ -74,7 +74,7 @@ function Test-UcTeamsDevicesCompliancePolicy {
     $URLSupportedCompliancePoliciesWindows = "https://aka.ms/TeamsDevicePolicies?tabs=mtr-w#supported-device-compliance-policies"
 
     if (Test-UcMgGraphConnection -Scopes "DeviceManagementConfiguration.Read.All", "Directory.Read.All") {
-        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         $outFileName = "TeamsDevices_CompliancePolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
         if ($OutputPath) {
             if (!(Test-Path $OutputPath -PathType Container)) {

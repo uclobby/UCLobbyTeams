@@ -72,7 +72,7 @@ function Update-UcTeamsDevice {
     $regExIPAddressSubnet = "^((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9]))\/(3[0-2]|[1-2]{1}[0-9]{1}|[1-9])$"
     if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.ReadWrite.All", "User.Read.All") {
         $outTeamsDevices = [System.Collections.ArrayList]::new()
-        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         #Checking if the Subnet is valid
         if ($Subnet) {
             if (!($Subnet -match $regExIPAddressSubnet)) {

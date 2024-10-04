@@ -28,13 +28,28 @@ Please use the PowerShell Gallery to install this module:
 <br/>Test-UcTeamsDevicesCompliancePolicy
 
 <br/>Get-UcArch
-<br/>Test-UcModuleUpdateAvailable
+<br/>Test-UcPowerShellModule
 
 <br/>More info:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
 
+<br/>0.6.1 - 2024/10/04
+<ul>
+<li>Test-UcTeamsDevicesConditionalAccessPolicy
+  <br>Change: Added verification for - Assignment > Conditions > Authentication flow
+</li>
+<li>Get-UcM365LicenseAssignment
+  <br/>Change: PowerShell verb changed from Get to Export since it creates an output file and doesnt output a table. Please use Export-UcM365LicenseAssignment, the Get-UcM365LicenseAssignment will be deprecated in a future release.
+</li>
+<li>Get-UcOneDriveWithMultiplePermissions
+  <br/>Change: PowerShell verb changed from Get to Export since it creates an output file and doesnt output a table. Please use Export-UcOneDriveWithMultiplePermissions, the Get-UcOneDriveWithMultiplePermissions will be deprecated in a future release.
+</li>
+<li>Test-UcModuleUpdateAvailable
+  <br/>Change: Cmdlet name change to Test-UcPowerShellModule and now returns false if the module is not installed.
+</li>
+</ul>
 <br/>0.6.0 - 2024/09/20
 <ul>
 <li>Get-UcM365LicenseAssignment

@@ -27,7 +27,7 @@ function Test-UcTeamsOnlyDNSRequirements {
     }
     else {
         try {
-            Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
             #We only need to validate the Enable domains and exclude *.onmicrosoft.com
             $365Domains = Get-CsOnlineSipDomain | Where-Object { $_.Status -eq "Enabled" -and $_.Name -notlike "*.onmicrosoft.com" }
         }

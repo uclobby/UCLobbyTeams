@@ -48,7 +48,7 @@ function Get-UcTeamsVersion {
 
     $outTeamsVersion = [System.Collections.ArrayList]::new()
     if (!$SkipModuleCheck) {
-        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
     }
 
     if ($Path) {

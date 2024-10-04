@@ -41,7 +41,7 @@ function Test-UcTeamsDevicesEnrollmentPolicy {
     $output = [System.Collections.ArrayList]::new()
 
     if (Test-UcMgGraphConnection -Scopes "DeviceManagementServiceConfig.Read.All", "DeviceManagementConfiguration.Read.All", "Directory.Read.All") {
-        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         $outFileName = "TeamsDevices_EnrollmentPolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
         if ($OutputPath) {
             if (!(Test-Path $OutputPath -PathType Container)) {

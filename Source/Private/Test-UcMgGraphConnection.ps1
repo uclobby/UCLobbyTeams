@@ -19,10 +19,6 @@ function Test-UcMgGraphConnection {
 
         .PARAMETER Scopes
         When present it will get detailed information from Teams Devices
-
-        .EXAMPLE 
-        PS> Connect-UcMgGraph "TeamworkDevice.Read.All","Directory.Read.All"
-
     #>
     #Checking if Microsoft.Graph is installed
     if (!(Get-Module Microsoft.Graph.Authentication -ListAvailable)) {
@@ -31,7 +27,7 @@ function Test-UcMgGraphConnection {
     }
     $MgGraphContext = Get-MgContext
 
-    if($AuthType -and $MgGraphContext.AuthType -ne $AuthType){
+    if ($AuthType -and $MgGraphContext.AuthType -ne $AuthType) {
         Write-Warning ("Wrong Permission Type: " + $MgGraphContext.AuthType + ", this PowerShell cmdlet requires: $AuthType") 
         return $false
     }

@@ -35,7 +35,7 @@ function Get-UcTeamsVersionBatch {
         PS> Get-UcTeamsVersionBatch -InputCSV C:\Temp\ComputerList.csv -Credential $cred -ExportCSV
     #>
 
-    Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+    Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
     if (Test-Path $InputCSV) {
         try {
             $Computers = Import-Csv -Path $InputCSV

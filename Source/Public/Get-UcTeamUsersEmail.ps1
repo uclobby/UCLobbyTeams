@@ -32,7 +32,7 @@ function Get-UcTeamUsersEmail {
     #>
 
     $output = [System.Collections.ArrayList]::new()
-    Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+    Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
     if ($TeamName) {
         $Teams = Get-Team -DisplayName $TeamName
     }

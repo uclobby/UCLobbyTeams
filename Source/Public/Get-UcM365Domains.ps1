@@ -19,9 +19,8 @@ function Get-UcM365Domains {
     $regex = "^(.*@)(.*[.].*)$"
     $outDomains = [System.Collections.ArrayList]::new()
     try {
-        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
-        
     }
     catch [System.Net.WebException] {
         if ($PSItem.Exception.Message -eq "The remote server returned an error: (400) Bad Request.") {

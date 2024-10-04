@@ -67,7 +67,7 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
     $URLTeamsDevicesKnownIssues = "https://docs.microsoft.com/microsoftteams/troubleshoot/teams-rooms-and-devices/rooms-known-issues#teams-phone-devices"
 
     if (Test-UcMgGraphConnection -Scopes "Policy.Read.All", "Directory.Read.All") {
-        Test-UcModuleUpdateAvailable -ModuleName UcLobbyTeams
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         $outFileName = "TeamsDevices_ConditionalAccessPolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
 
         if ($OutputPath) {
@@ -457,6 +457,45 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
+                    #20240924 - Added check authentication flows
+                    #region 9: Assignment > Conditions > Authentication flows
+                    $ID = 9
+                    $Setting = "authenticationFlows"
+                    $SettingDescription = "Assignment > Conditions > Authentication flows"
+                    $Comment = ""
+                    if ($ConditionalAccessPolicy.conditions.authenticationFlows.transferMethods -like "*deviceCodeFlow*") {
+                        $SettingValue = $ConditionalAccessPolicy.conditions.authenticationFlows.transferMethods
+                        if($ConditionalAccessPolicy.GrantControls.BuiltInControls -contains "block"){
+                             $Status = "Not Supported"
+                             $Comment = "Authentication flows with block will prevent Teams Devices Remote Sign in" 
+                             $PolicyErrors++
+                        }else{
+                            $Status = "Supported"
+                        }
+                    }
+                    else {
+                        $SettingValue = "Not Configured"
+                        $Status = "Supported"
+                    }
+                    $SettingPSObj = [PSCustomObject]@{
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyState           = $PolicyState
+                        Setting               = $Setting 
+                        Value                 = $SettingValue
+                        TeamsDevicesStatus    = $Status 
+                        Comment               = $Comment
+                        SettingDescription    = $SettingDescription 
+                        AssignedToGroup       = $outAssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        ID                    = $ID
+                    }
+                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
+                    [void]$output.Add($SettingPSObj)
+                    #endregion                    
+
                     #region 10: Access controls > Grant
                     $Setting = "GrantControls"
                     foreach ($BuiltInControl in $ConditionalAccessPolicy.GrantControls.BuiltInControls) {
@@ -502,6 +541,7 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                                 $Comment = $URLTeamsDevicesCA 
                                 $PolicyErrors++
                             }
+
                             default { 
                                 $ID = 10
                                 $SettingDescription = "Access controls > Grant > " + $BuiltInControl
