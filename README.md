@@ -9,9 +9,9 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Get-UcM365Domains
 <br/>Get-UcM365TenantId 
-<br/>Get-UcM365LicenseAssignment
+<br/>Export-UcM365LicenseAssignment
 
-<br/>Get-UcOneDriveWithMultiplePermissions
+<br/>Export-UcOneDriveWithMultiplePermissions
 
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
@@ -35,6 +35,18 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.6.2 - 2024/10/23
+<ul>
+<li>Export-UcM365LicenseAssignment
+  <br>Change: The SKU parameter can be use to search, if we use "copilot" then all licenses with copilot will be included in the export file.
+  <br>Fix: In some scenarios the license exists in the tenant but no information available in "Products names and Services Identifiers" file, for these cases the output will be the SKU Part Number.
+</li>
+<li>Update-UcTeamsDevice
+  <br>Change: For ReportOnly we can use TeamworkDevice.Read.All, since we dont require write permissions (TeamworkDevice.ReadWrite.All).
+  <br>Change: Now the user/application running the cmdlet can have User.ReadBasic.All or User.Read.All as graph permission.
+  <br>Fix: The current user display name was empty in the output file.
+</li>
+</ul>
 <br/>0.6.1 - 2024/10/04
 <ul>
 <li>Test-UcTeamsDevicesConditionalAccessPolicy

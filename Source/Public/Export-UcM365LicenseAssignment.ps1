@@ -119,15 +119,17 @@
         #region 20232019 - Adding filter to SKU
         if ($SKU) {
             if ($UseFriendlyNames) {
-                $SKUGUID = ($SKUnSP | Where-Object { $_.String_Id -eq $SKU -or $_.Product_Display_Name -eq $SKU } | Sort-Object GUID -Unique ).GUID
-                $TenantSKUs = $TenantSKUs | Where-Object { $_.skuId -eq $SKUGUID }
+                #20241022 - Change to allow to search using SKU parameter instead of exact match.
+                $SKUGUID = ($SKUnSP | Where-Object { $_.String_Id -match $SKU -or $_.Product_Display_Name -match $SKU } | Sort-Object GUID -Unique ).GUID
+                $TenantSKUs = $TenantSKUs | Where-Object { $_.skuId -in $SKUGUID -or $_.skuPartNumber -match $SKU}
                 if ($TenantSKUs.count -eq 0) {
                     Write-Warning "Could not find `"$SKU`" (SKU Name/Part Number) subscription associated with the tenant."
                     return 
                 }
             }
             else {
-                $TenantSKUs = $TenantSKUs | Where-Object { $_.skuPartNumber -eq $SKU }
+                #20241022 - Change to allow to search using SKU parameter instead of exact match.
+                $TenantSKUs = $TenantSKUs | Where-Object { $_.skuPartNumber -match $SKU }
                 if ($TenantSKUs.count -eq 0) {
                     Write-Warning "Could not find `"$SKU`" (SKU Part Number) subscription associated with the tenant."
                     return 
@@ -266,11 +268,13 @@
         else {
             #region License Assignment
             foreach ($TenantSKU in $TenantSKUs) {
+                $LicenseDisplayName = $TenantSKU.skuPartNumber
                 if ($UseFriendlyNames) {
-                    $LicenseDisplayName = ($SKUnSP | Where-Object { $_.GUID -eq $TenantSKU.skuID } | Sort-Object Product_Display_Name -Unique).Product_Display_Name
-                }
-                else {
-                    $LicenseDisplayName = $TenantSKU.skuPartNumber
+                    $tmpFriendlyName = ($SKUnSP | Where-Object { $_.GUID -eq $TenantSKU.skuID } | Sort-Object Product_Display_Name -Unique).Product_Display_Name
+                    #20241022 - To prevent empty name when a license exists in the tenant but the data is not available in "Products names and Services Identifiers" file.
+                    if ($tmpFriendlyName) {
+                        $LicenseDisplayName = $tmpFriendlyName
+                    }  
                 }
                 $SKUUserServicePlans = $TenantSKU.servicePlans | Where-Object -Property appliesTo -EQ -Value "User" | Sort-Object servicePlanName
                 $usersProcessed = 0       

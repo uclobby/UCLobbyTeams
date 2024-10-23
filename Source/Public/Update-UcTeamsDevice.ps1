@@ -70,7 +70,15 @@ function Update-UcTeamsDevice {
     #>
 
     $regExIPAddressSubnet = "^((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9]))\/(3[0-2]|[1-2]{1}[0-9]{1}|[1-9])$"
-    if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.ReadWrite.All", "User.Read.All") {
+    #20241023: If report Only then we dont need write permission on TeamworkDevice
+    $GraphConnected = $false
+    if($ReportOnly){
+        $GraphConnected = Test-UcMgGraphConnection -Scopes "TeamworkDevice.Read.All","User.Read.All" -AltScopes "TeamworkDevice.Read.All","User.ReadBasic.All"
+    } else {
+        $GraphConnected = Test-UcMgGraphConnection -Scopes "TeamworkDevice.ReadWrite.All","User.Read.All" -AltScopes "TeamworkDevice.ReadWrite.All","User.ReadBasic.All"
+    }
+
+    if ($GraphConnected) {
         $outTeamsDevices = [System.Collections.ArrayList]::new()
         Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         #Checking if the Subnet is valid
@@ -421,7 +429,7 @@ function Update-UcTeamsDevice {
 
                 $TDObj = New-Object -TypeName PSObject -Property @{
                     TACDeviceID                     = $TeamsDevice.id
-                    UserDisplayName                 = $TeamsDevice.currentuser.displayName
+                    UserDisplayName                 = $TeamsDevice.currentUser.displayName
                     UserUPN                         = $userUPN
                     DeviceType                      = Convert-UcTeamsDeviceType $TeamsDevice.deviceType
                     Manufacturer                    = $TeamsDevice.hardwaredetail.manufacturer
@@ -453,7 +461,7 @@ function Update-UcTeamsDevice {
             return $outTeamsDevices
         }
         elseif ( $outTeamsDevices.Count -gt 1) {
-            $outTeamsDevices | Sort-Object DeviceType, Manufacturer, Model | Select-Object TACDeviceID, DisplayName, UserUPN, DeviceType, Manufacturer, Model, HealthStatus, TeamsAdminAgentCurrentVersion, TeamsAdminAgentAvailableVersion, FirmwareCurrentVersion, FirmwareAvailableVersion, CompanyPortalCurrentVersion, CompanyPortalAvailableVersion, OEMAgentAppCurrentVersion, OEMAgentAppAvailableVersion, TeamsAppCurrentVersion, TeamsAppAvailableVersion, PreviousUpdateStatus, PreviousUpdateInitiatedBy, PreviousUpdateModifiedDate, UpdateStatus | Export-Csv -path $OutputFullPath -NoTypeInformation
+            $outTeamsDevices | Sort-Object DeviceType, Manufacturer, Model | Select-Object TACDeviceID, UserDisplayName, UserUPN, DeviceType, Manufacturer, Model, HealthStatus, TeamsAdminAgentCurrentVersion, TeamsAdminAgentAvailableVersion, FirmwareCurrentVersion, FirmwareAvailableVersion, CompanyPortalCurrentVersion, CompanyPortalAvailableVersion, OEMAgentAppCurrentVersion, OEMAgentAppAvailableVersion, TeamsAppCurrentVersion, TeamsAppAvailableVersion, PreviousUpdateStatus, PreviousUpdateInitiatedBy, PreviousUpdateModifiedDate, UpdateStatus | Export-Csv -path $OutputFullPath -NoTypeInformation
             Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
         }
         else {
