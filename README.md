@@ -35,6 +35,12 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.6.3 - 2024/10/25
+<ul>
+<li>Get-UcTeamsVersion
+  <br>Fix: No output generated for New Teams if the tma_settings.json file was missing.
+</li>
+</ul>
 <br/>0.6.2 - 2024/10/23
 <ul>
 <li>Export-UcM365LicenseAssignment

@@ -241,33 +241,47 @@ function Get-UcTeamsVersion {
             #endregion
 
             #region New Teams
-            $NewTeamsSettingPath = $ProfilePath + "\AppData\Local\Publishers\8wekyb3d8bbwe\TeamsSharedConfig\tma_settings.json"
-            if (Test-Path $NewTeamsSettingPath -ErrorAction SilentlyContinue) {
-                $NewTeamsSettings = Get-Content -Path $NewTeamsSettingPath | ConvertFrom-Json
-                $tmpAccountID = $NewTeamsSettings.primary_user.accounts.account_id
+            #20241025 - In some cases we need to check if the APP is installed even if the config file doesnt exist.
+            $TeamsAppPackage = Get-AppPackage MSTeams
+            if ($TeamsAppPackage -or $Computer) {
                 if ($Computer) {
                     $newTeamsLocation = Get-ChildItem -Path ( $RemotePath + "\..\Program Files\Windowsapps" ) -Filter "ms-teams.exe" -Recurse -Depth 1 | Sort-Object -Property CreationTime -Descending | Select-Object -First 1                    
                 }
                 else {
                     #20240103 - Using Get-AppPackage drops the requirement to run with Administrative Rights
-                    $newTeamsInstallPath = (Get-AppPackage MSTeams).InstallLocation + ".\ms-teams.exe"
+                    #$newTeamsLocation = Get-ChildItem -Path "C:\Program Files\Windowsapps" -Filter "ms-teams.exe" -Recurse -Depth 1 | Sort-Object -Property CreationTime -Descending | Select-Object -First 1
+                    $newTeamsInstallPath = $TeamsAppPackage.InstallLocation + ".\ms-teams.exe"
                     $newTeamsLocation = Get-ItemProperty -Path ($newTeamsInstallPath)
                 }
                 if (Test-Path -Path $newTeamsLocation.FullName -ErrorAction SilentlyContinue) {
+                    $tmpRing = ""
+                    $tmpEnvironment = ""
+                    $tmpCloudEnvironment = ""
+                    $NewTeamsSettingPath = $ProfilePath + "\AppData\Local\Publishers\8wekyb3d8bbwe\TeamsSharedConfig\tma_settings.json"
+                    if (Test-Path $NewTeamsSettingPath -ErrorAction SilentlyContinue) {
+                        try {
+                            $NewTeamsSettings = Get-Content -Path $NewTeamsSettingPath | ConvertFrom-Json
+                            $tmpAccountID = $NewTeamsSettings.primary_user.accounts.account_id
+                            $tmpRing = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.ring
+                            $tmpEnvironment = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.environment
+                            $tmpCloudEnvironment = $NewTeamsSettings.primary_user.accounts.cloud
+                        }
+                        catch {}
+                    }
                     $TeamsVersion = New-Object -TypeName PSObject -Property @{
                         Computer         = $ComputerName
                         Profile          = $ProfileName
                         ProfilePath      = $ProfilePath
                         Type             = "New Teams"
                         Version          = $newTeamsLocation.VersionInfo.ProductVersion
-                        Ring             = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.ring
-                        Environment      = $NewTeamsSettings.tma_ecs_settings.$tmpAccountID.environment
-                        CloudEnvironment = $NewTeamsSettings.primary_user.accounts.cloud
+                        Ring             = $tmpRing
+                        Environment      = $tmpEnvironment
+                        CloudEnvironment = $tmpCloudEnvironment
                         Arch             = Get-UcArch $newTeamsLocation.FullName
                         InstallDate      = $newTeamsLocation.CreationTime | Get-Date -Format $currentDateFormat
                     }
                     $TeamsVersion.PSObject.TypeNames.Insert(0, 'TeamsVersion')
-                    [void]$outTeamsVersion.Add($TeamsVersion)
+                    [void]$outTeamsVersion.Add($TeamsVersion)                
                 }
             }
             #endregion
