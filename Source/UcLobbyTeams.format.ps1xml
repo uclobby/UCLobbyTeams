@@ -752,5 +752,51 @@
 				</TableRowEntries>
 			</TableControl>
 		</View>
+		<View>
+			<Name>EntraObjectsOwnedByUser</Name>
+			<ViewSelectedBy>
+				<TypeName>EntraObjectsOwnedByUser</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader/>
+					<TableColumnHeader>
+						<Label>Display Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Object ID</Label>
+					</TableColumnHeader>
+					<TableColumnHeader/>
+					<TableColumnHeader/>
+					<TableColumnHeader>
+						<Label>Creation Date</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>User</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DisplayName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>ObjectID</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Type</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Visibility</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>CreatedDateTime</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
 	</ViewDefinitions>
 </Configuration>

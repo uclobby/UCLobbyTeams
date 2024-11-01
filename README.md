@@ -11,6 +11,8 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcM365TenantId 
 <br/>Export-UcM365LicenseAssignment
 
+<br/>Get-UcEntraObjectsOwnedByUser
+
 <br/>Export-UcOneDriveWithMultiplePermissions
 
 <br/>Get-UcTeamsWithSingleOwner
@@ -35,6 +37,16 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.7.0 - 2024/11/01
+<ul>
+  <li>Get-UcEntraObjectsOwnedByUser
+    <br/>New cmdlet: Returns all Entra objects associated with a user.
+  </li>
+  <li>Get-UcTeamsVersion
+    <br>Fix: Teams Classic was include in the output if settings file was present after Teams Classic uninstallation.
+    <br>Fix: Running this in Windows 10 with PowerShell 7 an exception could be raised while importing the Appx PowerShell module. Thank you Steve Chupack for reporting this issue.
+  </li>
+</ul>
 <br/>0.6.3 - 2024/10/25
 <ul>
 <li>Get-UcTeamsVersion
