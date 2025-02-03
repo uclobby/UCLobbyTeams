@@ -1,9 +1,4 @@
 function Test-UcTeamsOnlyDNSRequirements {
-    param(
-        [Parameter(Mandatory = $false)]
-        [string]$Domain,
-        [switch]$All
-    )    
     <#
         .SYNOPSIS
         Check if the DNS records are OK for a TeamsOnly Tenant.
@@ -20,14 +15,23 @@ function Test-UcTeamsOnlyDNSRequirements {
         .EXAMPLE
         PS> Test-UcTeamsOnlyDNSRequirements -Domain uclobby.com
     #>
-    
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$Domain,
+        [switch]$All
+    )
+
     $outDNSRecords = [System.Collections.ArrayList]::new()
     if ($Domain) {
         $365Domains = Get-UcM365Domains -Domain $Domain | Where-Object { $_.Name -notlike "*.onmicrosoft.com" }
     }
     else {
         try {
-            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            #2025-01-31: Only need to check this once per PowerShell session
+            if (!($global:UCLobbyTeamsModuleCheck)) {
+                Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+                $global:UCLobbyTeamsModuleCheck = $true
+            }
             #We only need to validate the Enable domains and exclude *.onmicrosoft.com
             $365Domains = Get-CsOnlineSipDomain | Where-Object { $_.Status -eq "Enabled" -and $_.Name -notlike "*.onmicrosoft.com" }
         }

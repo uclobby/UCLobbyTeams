@@ -1,11 +1,4 @@
 ﻿function Export-UcM365LicenseAssignment {
-    param(
-        [string]$SKU,    
-        [switch]$UseFriendlyNames,
-        [switch]$SkipServicePlan,
-        [string]$OutputPath,
-        [switch]$DuplicateServicePlansOnly
-    )
     <#
         .SYNOPSIS
         Generate a report of the User assigned licenses either direct or assigned by group (Inherited)
@@ -40,12 +33,24 @@
         .EXAMPLE 
         PS> Get-UcM365LicenseAssignment -UseFriendlyNames
     #>
+    param(
+        [string]$SKU,    
+        [switch]$UseFriendlyNames,
+        [switch]$SkipServicePlan,
+        [string]$OutputPath,
+        [switch]$DuplicateServicePlansOnly
+    )
+
     $startTime = Get-Date
     if ((Test-UcMgGraphConnection -Scopes "Directory.Read.All" -AltScopes ("User.Read.All", "Organization.Read.All"))) {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if (!($global:UCLobbyTeamsModuleCheck)) {
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         $outFile = "M365LicenseAssigment_" 
-        #region 20240905 - Users with Duplicate Service Plans
-        if($DuplicateServicePlansOnly){
+        #region 2024-09-05: Users with Duplicate Service Plans
+        if ($DuplicateServicePlansOnly) {
             $outFile += "DuplicateServicePlansOnly_"
         }
         #endregion
@@ -64,7 +69,7 @@
         }
         
         if ($UseFriendlyNames) {
-            #20231019 - Change: OutputPath will be for both report and Product names and service plan identifiers for licensing.csv
+            #2023-10-19: Change: OutputPath will be for both report and Product names and service plan identifiers for licensing.csv
             $SKUnSPFilePath = [System.IO.Path]::Combine($OutputPath, "Product names and service plan identifiers for licensing.csv")
             if (!(Test-Path -Path $SKUnSPFilePath)) {
                 try {
@@ -84,7 +89,7 @@
             }
         }
 
-        #region 20240905 - Combined Graph calls for SKUs, Licensed Groups
+        #region 2024-09-05: Combined Graph calls for SKUs, Licensed Groups
         #Tenant SKUs - All Licenses that exist in the tenant
         $graphRequests = [System.Collections.ArrayList]::new()
         $gRequestTmp = New-Object -TypeName PSObject -Property @{
@@ -116,19 +121,19 @@
         }
         #endregion
 
-        #region 20232019 - Adding filter to SKU
+        #region 2023-10-19: Adding filter to SKU
         if ($SKU) {
             if ($UseFriendlyNames) {
-                #20241022 - Change to allow to search using SKU parameter instead of exact match.
+                #2024-10-22: Change to allow to search using SKU parameter instead of exact match.
                 $SKUGUID = ($SKUnSP | Where-Object { $_.String_Id -match $SKU -or $_.Product_Display_Name -match $SKU } | Sort-Object GUID -Unique ).GUID
-                $TenantSKUs = $TenantSKUs | Where-Object { $_.skuId -in $SKUGUID -or $_.skuPartNumber -match $SKU}
+                $TenantSKUs = $TenantSKUs | Where-Object { $_.skuId -in $SKUGUID -or $_.skuPartNumber -match $SKU }
                 if ($TenantSKUs.count -eq 0) {
                     Write-Warning "Could not find `"$SKU`" (SKU Name/Part Number) subscription associated with the tenant."
                     return 
                 }
             }
             else {
-                #20241022 - Change to allow to search using SKU parameter instead of exact match.
+                #2024-10-22: Change to allow to search using SKU parameter instead of exact match.
                 $TenantSKUs = $TenantSKUs | Where-Object { $_.skuPartNumber -match $SKU }
                 if ($TenantSKUs.count -eq 0) {
                     Write-Warning "Could not find `"$SKU`" (SKU Part Number) subscription associated with the tenant."
@@ -141,7 +146,7 @@
         }
         #endregion
 
-        #region 20131019 - Getting all Service Plans for new matrix style report
+        #region 2023-10-19: Getting all Service Plans for new matrix style report
         $allServicePlans = [System.Collections.ArrayList]::new()
         foreach ($TenantSKU in $TenantSKUs) {
             $tmpUserServicePlans = $TenantSKU.ServicePlans | Where-Object -Property appliesTo -EQ -Value "User" 
@@ -177,7 +182,7 @@
 
         Write-Progress -Id 2 -Activity "Get-UcM365LicenseAssignment, Step 2: Reading users assigned licenses/service plans"
         if ($DuplicateServicePlansOnly) {
-            #region 20240905 - Users with Duplicate Service Plans
+            #region 2024-09-05: Users with Duplicate Service Plans
             #We need to check license per user, this is slower than check per SKU like in Licensing Assignment but required in order to detect duplicates.
             $TotalUsers = 0
             $usersProcessed = 0
@@ -240,8 +245,8 @@
                             }
                         }
                     
-                        # Checking if we have more then one Service Plan
-                        # In the future we can add filters, like only if both are ON or Ignore Direct/Inherited
+                        #Checking if we have more then one Service Plan
+                        #In the future we can add filters, like only if both are ON or Ignore Direct/Inherited
                         $skuWithDupServicePlans = $tmpUserServicePlans | Group-Object -Property ServicePlanId | Where-Object { $_.Count -gt 1 } | Select-Object -ExpandProperty Group | Select-Object LicenseSkuId, LicenseDisplayName, LicenseAssignment, LicenseAssignmentGroup  | Sort-Object -Property LicenseDisplayName, LicenseAssignment, LicenseAssignmentGroup -Unique 
                         if (($skuWithDupServicePlans.Count -gt 0)) {
                             foreach ($UserLicenseState in  $skuWithDupServicePlans) {
@@ -271,7 +276,7 @@
                 $LicenseDisplayName = $TenantSKU.skuPartNumber
                 if ($UseFriendlyNames) {
                     $tmpFriendlyName = ($SKUnSP | Where-Object { $_.GUID -eq $TenantSKU.skuID } | Sort-Object Product_Display_Name -Unique).Product_Display_Name
-                    #20241022 - To prevent empty name when a license exists in the tenant but the data is not available in "Products names and Services Identifiers" file.
+                    #2024-10-22: To prevent empty name when a license exists in the tenant but the data is not available in "Products names and Services Identifiers" file.
                     if ($tmpFriendlyName) {
                         $LicenseDisplayName = $tmpFriendlyName
                     }  
@@ -335,7 +340,7 @@
 
         if ($usersProcessed -gt 0) {
             Write-Host ("Results available in " + $OutputFilePath) -ForegroundColor Cyan
-            #region 20231019 - Change: Added execution time to the output.
+            #region 2023-10-19: Added execution time to the output.
             $endTime = Get-Date
             $totalSeconds = [math]::round(($endTime - $startTime).TotalSeconds, 2)
             $totalTime = New-TimeSpan -Seconds $totalSeconds

@@ -1,15 +1,4 @@
 function Test-UcTeamsDevicesCompliancePolicy {
-    param(
-        [switch]$Detailed,
-        [switch]$All,
-        [switch]$IncludeSupported,
-        [string]$PolicyID,
-        [string]$PolicyName,
-        [string]$UserUPN,
-        [string]$DeviceID,
-        [switch]$ExportCSV,
-        [string]$OutputPath
-    )
     <#
         .SYNOPSIS
         Validate which Intune Compliance policies are supported by Microsoft Teams Android Devices
@@ -56,7 +45,18 @@ function Test-UcTeamsDevicesCompliancePolicy {
         .EXAMPLE 
         PS> Test-UcTeamsDevicesCompliancePolicy -Detailed
     #>
-
+    param(
+        [switch]$Detailed,
+        [switch]$All,
+        [switch]$IncludeSupported,
+        [string]$PolicyID,
+        [string]$PolicyName,
+        [string]$UserUPN,
+        [string]$DeviceID,
+        [switch]$ExportCSV,
+        [string]$OutputPath
+    )
+    
     $connectedMSGraph = $false
     $CompliancePolicies = $null
     $totalCompliancePolicies = 0
@@ -74,7 +74,11 @@ function Test-UcTeamsDevicesCompliancePolicy {
     $URLSupportedCompliancePoliciesWindows = "https://aka.ms/TeamsDevicePolicies?tabs=mtr-w#supported-device-compliance-policies"
 
     if (Test-UcMgGraphConnection -Scopes "DeviceManagementConfiguration.Read.All", "Directory.Read.All") {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if(!($global:UCLobbyTeamsModuleCheck)){
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         $outFileName = "TeamsDevices_CompliancePolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
         if ($OutputPath) {
             if (!(Test-Path $OutputPath -PathType Container)) {
@@ -298,22 +302,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                         else {
                             $Status = "Supported"
                         }
-                        $SettingPSObj = [PSCustomObject]@{
+                        $SettingPSObj = [PSCustomObject][Ordered]@{
+                            ID                    = $ID
                             PolicyName            = $CompliancePolicy.displayName
+                            PolicyID              = $CompliancePolicy.id
                             PolicyType            = $CPType
+                            AssignedToGroup       = $outAssignedToGroup
+                            AssignedToGroupList   = $AssignedToGroup
+                            ExcludedFromGroup     = $outExcludedFromGroup 
+                            ExcludedFromGroupList = $ExcludedFromGroup
+                            TeamsDevicesStatus    = $Status 
                             Setting               = $Setting
                             Value                 = $SettingValue
-                            TeamsDevicesStatus    = $Status 
-                            Comment               = $Comment
                             SettingDescription    = $SettingDescription
-                            AssignedToGroup       = $outAssignedToGroup
-                            ExcludedFromGroup     = $outExcludedFromGroup 
-                            AssignedToGroupList   = $AssignedToGroup
-                            ExcludedFromGroupList = $ExcludedFromGroup
-                            PolicyID              = $CompliancePolicy.id
-                            ID                    = $ID
+                            Comment               = $Comment
                         }
-                        $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                         [void]$output.Add($SettingPSObj)
             
                         $ID = 9.2
@@ -337,22 +340,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                         else {
                             $Status = "Supported"
                         }
-                        $SettingPSObj = [PSCustomObject]@{
+                        $SettingPSObj = [PSCustomObject][Ordered]@{
+                            ID                    = $ID
                             PolicyName            = $CompliancePolicy.displayName
+                            PolicyID              = $CompliancePolicy.id
                             PolicyType            = $CPType
+                            AssignedToGroup       = $outAssignedToGroup
+                            AssignedToGroupList   = $AssignedToGroup
+                            ExcludedFromGroup     = $outExcludedFromGroup 
+                            ExcludedFromGroupList = $ExcludedFromGroup
+                            TeamsDevicesStatus    = $Status 
                             Setting               = $Setting
                             Value                 = $SettingValue
-                            TeamsDevicesStatus    = $Status 
-                            Comment               = $Comment
                             SettingDescription    = $SettingDescription
-                            AssignedToGroup       = $outAssignedToGroup
-                            ExcludedFromGroup     = $outExcludedFromGroup 
-                            AssignedToGroupList   = $AssignedToGroup
-                            ExcludedFromGroupList = $ExcludedFromGroup
-                            PolicyID              = $CompliancePolicy.id
-                            ID                    = $ID
+                            Comment               = $Comment
                         }
-                        $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                         [void]$output.Add($SettingPSObj)
                         #endregion
 
@@ -371,27 +373,26 @@ function Test-UcTeamsDevicesCompliancePolicy {
                         else {
                             $Status = "Supported"
                         }
-                        $SettingPSObj = [PSCustomObject]@{
+                        $SettingPSObj = [PSCustomObject][Ordered]@{
+                            ID                    = $ID
                             PolicyName            = $CompliancePolicy.displayName
+                            PolicyID              = $CompliancePolicy.id
                             PolicyType            = $CPType
+                            AssignedToGroup       = $outAssignedToGroup
+                            AssignedToGroupList   = $AssignedToGroup
+                            ExcludedFromGroup     = $outExcludedFromGroup 
+                            ExcludedFromGroupList = $ExcludedFromGroup
+                            TeamsDevicesStatus    = $Status 
                             Setting               = $Setting
                             Value                 = $SettingValue
-                            TeamsDevicesStatus    = $Status 
-                            Comment               = $Comment
                             SettingDescription    = $SettingDescription
-                            AssignedToGroup       = $outAssignedToGroup
-                            ExcludedFromGroup     = $outExcludedFromGroup 
-                            AssignedToGroupList   = $AssignedToGroup
-                            ExcludedFromGroupList = $ExcludedFromGroup
-                            PolicyID              = $CompliancePolicy.id
-                            ID                    = $ID
+                            Comment               = $Comment
                         }
-                        $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                         [void]$output.Add($SettingPSObj)
                         #endregion
                         #endregion
 
-                        #20240508 - We need to limit the settings since not all are available in AOSP compliance policies.
+                        #2024-05-08 - We need to limit the settings since not all are available in AOSP compliance policies.
                         if ($CompliancePolicy."@odata.type" -in $SupportedAndroidCompliancePolicies -and $CompliancePolicy."@odata.type" -ne "#microsoft.graph.aospDeviceOwnerCompliancePolicy") {
 
                             #region 1: Microsoft Defender for Endpoint > Require the device to be at or under the machine risk score
@@ -409,22 +410,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -443,22 +443,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -477,22 +476,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -511,22 +509,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -545,22 +542,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
                 
@@ -579,22 +575,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -618,22 +613,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -652,22 +646,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -686,28 +679,26 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
                         }
                         
                         if ($CompliancePolicy."@odata.type" -in $SupportedAndroidCompliancePolicies) {
-
                             #region 3: Device Health > Rooted devices
                             $ID = 3
                             $Setting = "securityBlockJailbrokenDevices"
@@ -723,22 +714,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -757,22 +747,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
                             
@@ -791,22 +780,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -825,22 +813,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
                         } 
@@ -861,22 +848,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                 
                             $ID = 18.2
@@ -893,22 +879,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -927,22 +912,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
 
@@ -961,22 +945,21 @@ function Test-UcTeamsDevicesCompliancePolicy {
                             else {
                                 $Status = "Supported"
                             }
-                            $SettingPSObj = [PSCustomObject]@{
+                            $SettingPSObj = [PSCustomObject][Ordered]@{
+                                ID                    = $ID
                                 PolicyName            = $CompliancePolicy.displayName
+                                PolicyID              = $CompliancePolicy.id
                                 PolicyType            = $CPType
+                                AssignedToGroup       = $outAssignedToGroup
+                                AssignedToGroupList   = $AssignedToGroup
+                                ExcludedFromGroup     = $outExcludedFromGroup 
+                                ExcludedFromGroupList = $ExcludedFromGroup
+                                TeamsDevicesStatus    = $Status 
                                 Setting               = $Setting
                                 Value                 = $SettingValue
-                                TeamsDevicesStatus    = $Status 
-                                Comment               = $Comment
                                 SettingDescription    = $SettingDescription
-                                AssignedToGroup       = $outAssignedToGroup
-                                ExcludedFromGroup     = $outExcludedFromGroup 
-                                AssignedToGroupList   = $AssignedToGroup
-                                ExcludedFromGroupList = $ExcludedFromGroup
-                                PolicyID              = $CompliancePolicy.id
-                                ID                    = $ID
+                                Comment               = $Comment
                             }
-                            $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceCompliancePolicyDetailed')
                             [void]$output.Add($SettingPSObj)
                             #endregion
                         }
@@ -992,9 +975,9 @@ function Test-UcTeamsDevicesCompliancePolicy {
                         else {
                             $StatusSum = "No issues found."
                         }
-                        $PolicySum = [PSCustomObject]@{
-                            PolicyID              = $CompliancePolicy.id
+                        $PolicySum = [PSCustomObject][Ordered]@{
                             PolicyName            = $CompliancePolicy.displayName
+                            PolicyID              = $CompliancePolicy.id
                             PolicyType            = $CPType
                             AssignedToGroup       = $outAssignedToGroup
                             AssignedToGroupList   = $AssignedToGroup
@@ -1020,12 +1003,12 @@ function Test-UcTeamsDevicesCompliancePolicy {
             }
             if ($IncludeSupported -and $Detailed) {
                 if ($ExportCSV) {
-                    $output | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyType, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                    $output | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID | Export-Csv -path $OutputFullPath -NoTypeInformation
                     Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
                     return
                 }
                 else {
-                    $output | Sort-Object PolicyName, ID
+                    $output | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID
                 }
             }
             elseif ($Detailed) {
@@ -1034,24 +1017,24 @@ function Test-UcTeamsDevicesCompliancePolicy {
                 }
                 else {
                     if ($ExportCSV) {
-                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyType, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID |  Export-Csv -path $OutputFullPath -NoTypeInformation
                         Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
                         return
                     }
                     else {
-                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID
                     }
                 }
             }
             else {
                 if (($skippedCompliancePolicies -gt 0) -and !$All) {
-                    Write-Warning ("Skipping $skippedCompliancePolicies compliance policies since will not be applied to Teams Devices.")
+                    Write-Warning ("Skipping $skippedCompliancePolicies compliance policies since they will not be applied to Teams Devices.")
                     Write-Warning ("Please use the All switch to check all policies: Test-UcTeamsDevicesCompliancePolicy -All")
                 }
                 if ($displayWarning) {
                     Write-Warning "One or more policies contain unsupported settings, please use Test-UcTeamsDevicesCompliancePolicy -Detailed to identify the unsupported settings."
                 }
-                $outputSum | Sort-Object PolicyName
+                $outputSum | Sort-Object PolicyName            
             }
         }
     }

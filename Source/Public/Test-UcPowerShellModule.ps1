@@ -1,8 +1,4 @@
 function Test-UcPowerShellModule {
-    param(
-        [Parameter(Mandatory = $true)]    
-        [string]$ModuleName
-    )
     <#
         .SYNOPSIS
         Test if PowerShell module is installed and updated
@@ -16,6 +12,11 @@ function Test-UcPowerShellModule {
         .EXAMPLE
         PS> Test-UcPowerShellModule -ModuleName UCLobbyTeams
     #>
+    param(
+        [Parameter(Mandatory = $true)]    
+        [string]$ModuleName
+    )
+    
     try { 
         #Get all installed versions
         $installedVersions = (Get-Module $ModuleName -ListAvailable | Sort-Object Version -Descending).Version
@@ -45,6 +46,7 @@ function Test-UcPowerShellModule {
             #Module is installed but not imported, in this case we check if there is a newer version available.
             if ($availableVersion -in $installedVersions) {
                 Write-Warning ("The lastest available version of $ModuleName module is installed, however the module is not imported." + [Environment]::NewLine + "Please make sure you import it with:" + [Environment]::NewLine + "Import-Module $ModuleName -RequiredVersion $availableVersion")
+                return $false
             }
             else {
                 Write-Warning ("There is a new version available $availableVersion, the lastest installed version is " + $installedVersions[0] + "." + [Environment]::NewLine + "Please update the module with:" + [Environment]::NewLine + "Update-Module $ModuleName")

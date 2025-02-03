@@ -1,8 +1,4 @@
 function Export-UcOneDriveWithMultiplePermissions {
-    param(
-        [string]$OutputPath,
-        [switch]$MultiGeo
-    )
     <#
         .SYNOPSIS
         Generate a report with OneDrive's that have more than a user with access permissions.
@@ -29,9 +25,18 @@ function Export-UcOneDriveWithMultiplePermissions {
         .EXAMPLE 
         PS> Get-UcOneDriveWithMultiplePermissions -MultiGeo
     #>
+    param(
+        [string]$OutputPath,
+        [switch]$MultiGeo
+    )
+    
     $startTime = Get-Date
     if ((Test-UcMgGraphConnection -Scopes "Sites.Read.All" -AltScopes ("Sites.ReadWrite.All") -AuthType "AppOnly" )) {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if (!($global:UCLobbyTeamsModuleCheck)) {
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         #Verify if the Output Path exists
         if ($OutputPath) {
             if (!(Test-Path $OutputPath -PathType Container)) {

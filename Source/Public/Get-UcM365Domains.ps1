@@ -1,8 +1,4 @@
 function Get-UcM365Domains {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Domain
-    )
     <#
         .SYNOPSIS
         Get Microsoft 365 Domains from a Tenant
@@ -16,10 +12,19 @@ function Get-UcM365Domains {
         .EXAMPLE
         PS> Get-UcM365Domains -Domain uclobby.com
     #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Domain
+    )
+
     $regex = "^(.*@)(.*[.].*)$"
     $outDomains = [System.Collections.ArrayList]::new()
     try {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if (!($global:UCLobbyTeamsModuleCheck)) {
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
     }
     catch [System.Net.WebException] {

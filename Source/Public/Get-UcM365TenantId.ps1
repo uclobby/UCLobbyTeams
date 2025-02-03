@@ -1,8 +1,4 @@
 function Get-UcM365TenantId {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Domain
-    )
     <#
         .SYNOPSIS
         Get Microsoft 365 Tenant Id 
@@ -16,12 +12,20 @@ function Get-UcM365TenantId {
         .EXAMPLE
         PS> Get-UcM365TenantId -Domain uclobby.com
     #>
-
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Domain
+    )
+    
     $regexTenantID = "^(.*@)(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})$"
     $regexOnMicrosoftDomain = "^(.*@)(?!.*mail)(.*.onmicrosoft.com)$"
 
     try {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if (!($global:UCLobbyTeamsModuleCheck)) {
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         $AllowedAudiences = Invoke-WebRequest -Uri ("https://accounts.accesscontrol.windows.net/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
     }
     catch [System.Net.Http.HttpRequestException] {

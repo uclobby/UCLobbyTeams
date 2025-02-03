@@ -1,10 +1,4 @@
 function Test-UcTeamsDevicesEnrollmentPolicy {
-    param(
-        [string]$UserUPN,
-        [switch]$Detailed,
-        [switch]$ExportCSV,
-        [string]$OutputPath
-    )    
     <#
         .SYNOPSIS
         Validate Intune Enrollment Policies that are supported by Microsoft Teams Android Devices
@@ -34,14 +28,24 @@ function Test-UcTeamsDevicesEnrollmentPolicy {
         .EXAMPLE 
         PS> Test-UcTeamsDevicesEnrollmentPolicy -UserUPN
     #>
-
+    param(
+        [string]$UserUPN,
+        [switch]$Detailed,
+        [switch]$ExportCSV,
+        [string]$OutputPath
+    )   
+    
     $GraphURI_Users = "https://graph.microsoft.com/v1.0/users"
     $GraphURI_EnrollmentPolicies = "https://graph.microsoft.com/beta/deviceManagement/deviceEnrollmentConfigurations"
     $GraphURI_AOSPEnrollmentProfiles = "https://graph.microsoft.com/beta/deviceManagement/androidDeviceOwnerEnrollmentProfiles?`$select=displayName,tokenExpirationDateTime&`$filter=enrollmentMode eq 'corporateOwnedAOSPUserAssociatedDevice' and isTeamsDeviceProfile eq true" 
     $output = [System.Collections.ArrayList]::new()
 
     if (Test-UcMgGraphConnection -Scopes "DeviceManagementServiceConfig.Read.All", "DeviceManagementConfiguration.Read.All", "Directory.Read.All") {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if(!($global:UCLobbyTeamsModuleCheck)){
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         $outFileName = "TeamsDevices_EnrollmentPolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
         if ($OutputPath) {
             if (!(Test-Path $OutputPath -PathType Container)) {
@@ -121,8 +125,8 @@ function Test-UcTeamsDevicesEnrollmentPolicy {
                     if (!($EnrollmentPolicy.androidRestriction.platformBlocked) -and !($EnrollmentPolicy.androidRestriction.personalDeviceEnrollmentBlocked)) {
                         $Status = "Supported"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PID                             = 9999
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
+                        ID                              = 9999
                         PolicyName                      = $EnrollmentPolicy.displayName
                         PolicyPriority                  = "Default"
                         PlatformType                    = "Android device administrator"
@@ -165,9 +169,8 @@ function Test-UcTeamsDevicesEnrollmentPolicy {
                         if (!($EnrollmentPolicy.platformRestriction.platformBlocked) -and !($EnrollmentPolicy.platformRestriction.personalDeviceEnrollmentBlocked)) {
                             $Status = "Supported"
                         }
-
-                        $SettingPSObj = [PSCustomObject]@{
-                            PID                             = $EnrollmentPolicy.priority
+                        $SettingPSObj = [PSCustomObject][Ordered]@{
+                            ID                              = $EnrollmentPolicy.priority
                             PolicyName                      = $EnrollmentPolicy.displayName
                             PolicyPriority                  = $EnrollmentPolicy.priority
                             PlatformType                    = "Android device administrator"
@@ -186,7 +189,6 @@ function Test-UcTeamsDevicesEnrollmentPolicy {
                     }
                 }
             }
-
             #region 20240912 - Support for Android AOSP Enrollment
             #AOSP Enrollment Profiles are not assigned to users.
             if (!$UserUPN) {
@@ -212,8 +214,8 @@ function Test-UcTeamsDevicesEnrollmentPolicy {
                 else {
                     $TeamsDevicesStatus = "Not Supported - Missing AOSP Enrollment"
                 }
-                $SettingPSObj = [PSCustomObject]@{
-                    PID                             = "10000"
+                $SettingPSObj = [PSCustomObject][Ordered]@{
+                    ID                              = "10000"
                     PolicyName                      = $PolicyName
                     PolicyPriority                  = "ASOP"
                     PlatformType                    = "Android Open Source Project (AOSP)"
@@ -229,19 +231,16 @@ function Test-UcTeamsDevicesEnrollmentPolicy {
                 [void]$output.Add($SettingPSObj)
             }
             #endregion
-            if ($Detailed) {
-                if ($ExportCSV) {
-                    $output | Sort-Object PID | Select-Object PolicyName, PolicyPriority, PlatformType, AssignedToGroup, TeamsDevicesStatus, PlatformBlocked, PersonalDeviceEnrollmentBlocked, osMinimumVersion, osMaximumVersion, blockedManufacturers | Export-Csv -path $OutputFullPath -NoTypeInformation
-                    Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
-                    return
-                }
-                #20231116 - Fix for empty output.
-                else {
-                    $output | Sort-Object PID | Format-List
-                }
+            if ($ExportCSV) {
+                $output | Sort-Object ID | Select-Object -ExcludeProperty ID | Export-Csv -path $OutputFullPath -NoTypeInformation
+                Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
+                return
+            }
+            if($Detailed){
+                return $output | Sort-Object ID | Select-Object -ExcludeProperty ID 
             }
             else {
-                $output | Sort-Object PID | Format-Table
+                return $output | Sort-Object ID
             }
         }
     }

@@ -1,7 +1,4 @@
 function Get-UcArch {
-    param(
-        [string]$FilePath
-    )
     <#
         .SYNOPSIS
         Funcion to get the Architecture from .exe file
@@ -18,6 +15,10 @@ function Get-UcArch {
         .EXAMPLE
         PS> Get-UcArch -FilePath C:\temp\example.exe
     #>
+    param(
+        [string]$FilePath
+    )
+
     try {
         $stream = New-Object System.IO.FileStream(
             $FilePath,

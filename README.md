@@ -37,38 +37,45 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>0.7.1 - 2025/02/03
+<ul>
+<li>Get-UcTeamsDevice
+  <br/>Fix: Issue checking the MS Graph Permissions.
+  <br/>Feature: Added switch UseTAC that allows to use Teams Admin Center API to get the Teams Devices information.
+</li>
+</ul>
 <br/>0.7.0 - 2024/11/01
 <ul>
   <li>Get-UcEntraObjectsOwnedByUser
     <br/>New cmdlet: Returns all Entra objects associated with a user.
   </li>
   <li>Get-UcTeamsVersion
-    <br>Fix: Teams Classic was include in the output if settings file was present after Teams Classic uninstallation.
-    <br>Fix: Running this in Windows 10 with PowerShell 7 an exception could be raised while importing the Appx PowerShell module. Thank you Steve Chupack for reporting this issue.
+    <br/>Fix: Teams Classic was included in the output if settings file was present after Teams Classic uninstallation.
+    <br/>Fix: Running this in Windows 10 with PowerShell 7 an exception could be raised while importing the Appx PowerShell module. Thank you Steve Chupack for reporting this issue.
   </li>
 </ul>
 <br/>0.6.3 - 2024/10/25
 <ul>
 <li>Get-UcTeamsVersion
-  <br>Fix: No output generated for New Teams if the tma_settings.json file was missing.
+  <br/>Fix: No output generated for New Teams if the tma_settings.json file was missing.
 </li>
 </ul>
 <br/>0.6.2 - 2024/10/23
 <ul>
 <li>Export-UcM365LicenseAssignment
-  <br>Change: The SKU parameter can be use to search, if we use "copilot" then all licenses with copilot will be included in the export file.
-  <br>Fix: In some scenarios the license exists in the tenant but no information available in "Products names and Services Identifiers" file, for these cases the output will be the SKU Part Number.
+  <br/>Change: The SKU parameter can be use to search, if we use "copilot" then all licenses with copilot will be included in the export file.
+  <br/>Fix: In some scenarios the license exists in the tenant but no information available in "Products names and Services Identifiers" file, for these cases the output will be the SKU Part Number.
 </li>
 <li>Update-UcTeamsDevice
-  <br>Change: For ReportOnly we can use TeamworkDevice.Read.All, since we dont require write permissions (TeamworkDevice.ReadWrite.All).
-  <br>Change: Now the user/application running the cmdlet can have User.ReadBasic.All or User.Read.All as graph permission.
-  <br>Fix: The current user display name was empty in the output file.
+  <br/>Change: For ReportOnly we can use TeamworkDevice.Read.All, since we dont require write permissions (TeamworkDevice.ReadWrite.All).
+  <br/>Change: Now the user/application running the cmdlet can have User.ReadBasic.All or User.Read.All as graph permission.
+  <br/>Fix: The current user display name was empty in the output file.
 </li>
 </ul>
 <br/>0.6.1 - 2024/10/04
 <ul>
 <li>Test-UcTeamsDevicesConditionalAccessPolicy
-  <br>Change: Added verification for - Assignment > Conditions > Authentication flow
+  <br/>Change: Added verification for - Assignment > Conditions > Authentication flow
 </li>
 <li>Get-UcM365LicenseAssignment
   <br/>Change: PowerShell verb changed from Get to Export since it creates an output file and doesnt output a table. Please use Export-UcM365LicenseAssignment, the Get-UcM365LicenseAssignment will be deprecated in a future release.

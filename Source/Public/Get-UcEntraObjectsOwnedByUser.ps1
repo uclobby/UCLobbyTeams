@@ -32,11 +32,15 @@ function Get-UcEntraObjectsOwnedByUser {
     param(
         [Parameter(Mandatory = $true)]
         [string]$User,
-        [ValidateSet("Application", "ServicePrincipal", "TokenLifetimePolicy","MailEnabledGroup", "SecurityGroup", "DistributionGroup", "Microsoft365Group", "Team", "Yammer")]
+        [ValidateSet("Application", "ServicePrincipal", "TokenLifetimePolicy", "MailEnabledGroup", "SecurityGroup", "DistributionGroup", "Microsoft365Group", "Team", "Yammer")]
         [string]$Type
     )
     if (Test-UcMgGraphConnection -Scopes "User.Read.All" -AltScopes "Directory.Read.All") {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if (!($global:UCLobbyTeamsModuleCheck)) {
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         $output = [System.Collections.ArrayList]::new()
         $graphRequests = [System.Collections.ArrayList]::new()
         $gRequestTmp = New-Object -TypeName PSObject -Property @{
@@ -116,6 +120,6 @@ function Get-UcEntraObjectsOwnedByUser {
                 [void]$output.Add($UserObject)
             }
         }
-        return $output | Sort-Object Type,DisplayName
+        return $output | Sort-Object Type, DisplayName
     }
 }

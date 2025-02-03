@@ -1,10 +1,4 @@
 function Get-UcTeamsVersion {
-    param(
-        [string]$Path,
-        [string]$Computer,
-        [System.Management.Automation.PSCredential]$Credential,
-        [switch]$SkipModuleCheck
-    )
     <#
         .SYNOPSIS
         Get Microsoft Teams Desktop Version
@@ -34,7 +28,13 @@ function Get-UcTeamsVersion {
         PS> $cred = Get-Credential
         PS> Get-UcTeamsVersion -Computer workstation124 -Credential $cred
     #>
-
+    param(
+        [string]$Path,
+        [string]$Computer,
+        [System.Management.Automation.PSCredential]$Credential,
+        [switch]$SkipModuleCheck
+    )
+    
     $regexVersion = '("version":")([0-9.]*)'
     $regexRing = '("ring":")(\w*)'
     $regexEnv = '("environment":")(\w*)'
@@ -43,12 +43,14 @@ function Get-UcTeamsVersion {
     $regexWindowsUser = '("upnWindowUserUpn":")([a-zA-Z0-9@._-]*)'
     $regexTeamsUserName = '("userName":")([a-zA-Z0-9@._-]*)'
 
-    #20240309 - REGEX to get New Teams version from log file DesktopApp: Version: 23202.1500.2257.3700
+    #2024-03-09: REGEX to get New Teams version from log file DesktopApp: Version: 23202.1500.2257.3700
     $regexNewVersion = '(DesktopApp: Version: )(\d{5}.\d{4}.\d{4}.\d{4})'
-
+    
+    #2025-01-31: Only need to check this once per PowerShell session
     $outTeamsVersion = [System.Collections.ArrayList]::new()
-    if (!$SkipModuleCheck) {
+    if (!$SkipModuleCheck -and !$global:UCLobbyTeamsModuleCheck) {
         Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        $global:UCLobbyTeamsModuleCheck = $true
     }
 
     if ($Path) {
@@ -180,7 +182,7 @@ function Get-UcTeamsVersion {
             }
             else {
                 $ProfilePath = $UserProfile.ProfileImagePath
-                #20231013 Added exception handeling, only known case is when a windows profile was created when the machine was joined to a previous domain.
+                #2023-10-13: Added exception handeling, only known case is when a windows profile was created when the machine was joined to a previous domain.
                 try {
                     $ProfileName = (New-Object System.Security.Principal.SecurityIdentifier($UserProfile.PSChildName)).Translate( [System.Security.Principal.NTAccount]).Value
                 }
@@ -189,7 +191,7 @@ function Get-UcTeamsVersion {
                 }
             }
             #region classic teams
-            #20241030 - We will only add an entry if the executable exists.
+            #2024-10-30: We will only add an entry if the executable exists.
             $TeamsApp = $ProfilePath + "\AppData\Local\Microsoft\Teams\current\Teams.exe"
             if (Test-Path -Path $TeamsApp) {
                 $TeamsSettingPath = $ProfilePath + "\AppData\Roaming\Microsoft\Teams\settings.json"
@@ -219,7 +221,7 @@ function Get-UcTeamsVersion {
                     }
                     catch { }
                     $TeamsInstallTimePath = $ProfilePath + "\AppData\Roaming\Microsoft\Teams\installTime.txt"
-                    #20240228 - In some cases the install file can be missing.
+                    #2024-02-28: In some cases the install file can be missing.
                     $tmpInstallDate = ""
                     if (Test-Path $TeamsInstallTimePath -ErrorAction SilentlyContinue) {
                         $InstallDateStr = Get-Content ($ProfilePath + "\AppData\Roaming\Microsoft\Teams\installTime.txt")
@@ -244,7 +246,7 @@ function Get-UcTeamsVersion {
             #endregion
 
             #region New Teams
-            #20241028 - Running this in Windows 10 with PowerShell 7 an exception could be raised while importing the Appx PowerShell module. Thank you Steve Chupack for reporting this issue.
+            #2024-10-28: Running this in Windows 10 with PowerShell 7 an exception could be raised while importing the Appx PowerShell module. Thank you Steve Chupack for reporting this issue.
             $newTeamsLocation = ""
             if ($Computer) {
                 $newTeamsLocation = Get-ChildItem -Path ( $RemotePath + "\..\Program Files\Windowsapps" ) -Filter "ms-teams.exe" -Recurse -Depth 1 | Sort-Object -Property CreationTime -Descending | Select-Object -First 1

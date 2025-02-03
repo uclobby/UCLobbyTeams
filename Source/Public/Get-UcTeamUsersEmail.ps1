@@ -1,10 +1,4 @@
 function Get-UcTeamUsersEmail {
-    [cmdletbinding(SupportsShouldProcess)]
-    param(
-        [string]$TeamName,
-        [ValidateSet("Owner", "User", "Guest")] 
-        [string]$Role
-    )
     <#
         .SYNOPSIS
         Get Users Email Address that are in a Team
@@ -30,9 +24,20 @@ function Get-UcTeamUsersEmail {
         .EXAMPLE
         PS> Get-UcTeamUsersEmail -TeamName "Marketing" -Role "Guest"
     #>
+    [cmdletbinding(SupportsShouldProcess)]
+    param(
+        [string]$TeamName,
+        [ValidateSet("Owner", "User", "Guest")] 
+        [string]$Role
+    )
 
     $output = [System.Collections.ArrayList]::new()
-    Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+
+    #2025-01-31: Only need to check this once per PowerShell session
+    if (!($global:UCLobbyTeamsModuleCheck)) {
+        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        $global:UCLobbyTeamsModuleCheck = $true
+    }
     if ($TeamName) {
         $Teams = Get-Team -DisplayName $TeamName
     }

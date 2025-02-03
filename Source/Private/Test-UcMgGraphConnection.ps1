@@ -1,11 +1,4 @@
 function Test-UcMgGraphConnection {
-    param(
-        [Parameter(mandatory = $false)]
-        [string[]]$Scopes,
-        [string[]]$AltScopes,
-        [ValidateSet("AppOnly", "Delegated")]
-        [string]$AuthType
-    )
     <#
         .SYNOPSIS
         Test connection to Microsoft Graph
@@ -20,6 +13,14 @@ function Test-UcMgGraphConnection {
         .PARAMETER Scopes
         When present it will get detailed information from Teams Devices
     #>
+    param(
+        [Parameter(mandatory = $false)]
+        [string[]]$Scopes,
+        [string[]]$AltScopes,
+        [ValidateSet("AppOnly", "Delegated")]
+        [string]$AuthType
+    )
+
     #Checking if Microsoft.Graph is installed
     if (!(Get-Module Microsoft.Graph.Authentication -ListAvailable)) {
         Write-Warning ("Missing Microsoft.Graph.Authentication PowerShell module. Please install it with:" + [Environment]::NewLine + "Install-Module Microsoft.Graph.Authentication") 
@@ -34,8 +35,7 @@ function Test-UcMgGraphConnection {
 
     #Checking if we have the required scopes.
     $currentScopes = $MgGraphContext.Scopes
- 
-    $strScope = ""
+     $strScope = ""
     $strAltScope = ""
     $missingScopes = ""
     $missingAltScopes = ""

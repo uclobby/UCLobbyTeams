@@ -1,12 +1,4 @@
 function Test-UcTeamsDevicesConditionalAccessPolicy {
-    param(
-        [switch]$Detailed,
-        [switch]$All,
-        [switch]$IncludeSupported,
-        [string]$UserUPN,
-        [switch]$ExportCSV,
-        [string]$OutputPath
-    )
     <#
         .SYNOPSIS
         Validate which Conditional Access policies are supported by Microsoft Teams Android Devices
@@ -53,7 +45,15 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
         .EXAMPLE 
         PS> Test-UcTeamsDevicesConditionalAccessPolicy -UserUPN
     #>
-
+    param(
+        [switch]$Detailed,
+        [switch]$All,
+        [switch]$IncludeSupported,
+        [string]$UserUPN,
+        [switch]$ExportCSV,
+        [string]$OutputPath
+    )
+    
     $GraphURI_Users = "https://graph.microsoft.com/v1.0/users"
     $GraphURI_Groups = "https://graph.microsoft.com/v1.0/groups"
     $GraphURI_ConditionalAccess = "https://graph.microsoft.com/beta/identity/conditionalAccess/policies"
@@ -67,7 +67,11 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
     $URLTeamsDevicesKnownIssues = "https://docs.microsoft.com/microsoftteams/troubleshoot/teams-rooms-and-devices/rooms-known-issues#teams-phone-devices"
 
     if (Test-UcMgGraphConnection -Scopes "Policy.Read.All", "Directory.Read.All") {
-        Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+        #2025-01-31: Only need to check this once per PowerShell session
+        if(!($global:UCLobbyTeamsModuleCheck)){
+            Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
+            $global:UCLobbyTeamsModuleCheck = $true
+        }
         $outFileName = "TeamsDevices_ConditionalAccessPolicy_Report_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
 
         if ($OutputPath) {
@@ -306,22 +310,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $PolicyErrors++
                     }
 
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -337,22 +340,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                     else {
                         $SettingValue = "Not Configured"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
 
                     $ID = 6.2
@@ -366,22 +368,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                     else {
                         $SettingValue = "Not Configured"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -405,22 +406,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         }
                     
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -438,22 +438,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Warning"
                         $Comment = "https://learn.microsoft.com/microsoftteams/troubleshoot/teams-rooms-and-devices/teams-android-devices-conditional-access-issues"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -477,22 +476,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $SettingValue = "Not Configured"
                         $Status = "Supported"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion                    
 
@@ -548,22 +546,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                                 $Status = "Supported"
                             }
                         }
-                        $SettingPSObj = [PSCustomObject]@{
-                            PolicyName            = $ConditionalAccessPolicy.displayName
-                            PolicyState           = $PolicyState
-                            Setting               = $Setting 
-                            Value                 = $SettingValue
-                            TeamsDevicesStatus    = $Status 
-                            Comment               = $Comment
-                            SettingDescription    = $SettingDescription 
-                            AssignedToGroup       = $outAssignedToGroup
-                            ExcludedFromGroup     = $outExcludedFromGroup 
-                            AssignedToGroupList   = $AssignedToGroup
-                            ExcludedFromGroupList = $ExcludedFromGroup
-                            PolicyID              = $ConditionalAccessPolicy.id
+                        $SettingPSObj = [PSCustomObject][Ordered]@{
                             ID                    = $ID
+                            PolicyName            = $ConditionalAccessPolicy.displayName
+                            PolicyID              = $ConditionalAccessPolicy.id
+                            PolicyState           = $PolicyState
+                            AssignedToGroup       = $outAssignedToGroup
+                            AssignedToGroupList   = $AssignedToGroup
+                            ExcludedFromGroup     = $outExcludedFromGroup 
+                            ExcludedFromGroupList = $ExcludedFromGroup
+                            TeamsDevicesStatus    = $Status 
+                            Setting               = $Setting 
+                            SettingDescription    = $SettingDescription 
+                            Value                 = $SettingValue
+                            Comment               = $Comment
                         }
-                        $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                         [void]$output.Add($SettingPSObj) 
                     }
                     #endregion
@@ -582,22 +579,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Supported"
                         $SettingValue = "Disabled"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -616,22 +612,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Supported"
                         $SettingValue = "Disabled"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -649,22 +644,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Supported"
                         $SettingValue = "Disabled"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
                 
@@ -682,22 +676,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Supported"
                         $SettingValue = "Not Configured"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -716,22 +709,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Supported"
                         $SettingValue = "Not Configured"
                     }
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -749,23 +741,21 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Supported"
                         $SettingValue = "Not Configured"
                     }
-                
-                    $SettingPSObj = [PSCustomObject]@{
-                        PolicyName            = $ConditionalAccessPolicy.displayName
-                        PolicyState           = $PolicyState
-                        Setting               = $Setting 
-                        Value                 = $SettingValue
-                        TeamsDevicesStatus    = $Status 
-                        Comment               = $Comment
-                        SettingDescription    = $SettingDescription 
-                        AssignedToGroup       = $outAssignedToGroup
-                        ExcludedFromGroup     = $outExcludedFromGroup 
-                        AssignedToGroupList   = $AssignedToGroup
-                        ExcludedFromGroupList = $ExcludedFromGroup
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $SettingPSObj = [PSCustomObject][Ordered]@{
                         ID                    = $ID
+                        PolicyName            = $ConditionalAccessPolicy.displayName
+                        PolicyID              = $ConditionalAccessPolicy.id
+                        PolicyState           = $PolicyState
+                        AssignedToGroup       = $outAssignedToGroup
+                        AssignedToGroupList   = $AssignedToGroup
+                        ExcludedFromGroup     = $outExcludedFromGroup 
+                        ExcludedFromGroupList = $ExcludedFromGroup
+                        TeamsDevicesStatus    = $Status 
+                        Setting               = $Setting 
+                        SettingDescription    = $SettingDescription 
+                        Value                 = $SettingValue
+                        Comment               = $Comment
                     }
-                    $SettingPSObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConditionalAccessPolicyDetailed')
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
@@ -780,9 +770,9 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                     else {
                         $StatusSum = "All settings supported."
                     }
-                    $PolicySum = [PSCustomObject]@{
-                        PolicyID              = $ConditionalAccessPolicy.id
+                    $PolicySum = [PSCustomObject][Ordered]@{
                         PolicyName            = $ConditionalAccessPolicy.DisplayName
+                        PolicyID              = $ConditionalAccessPolicy.id
                         PolicyState           = $PolicyState
                         AssignedToGroup       = $outAssignedToGroup
                         AssignedToGroupList   = $AssignedToGroup
@@ -808,12 +798,12 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
         
             if ($IncludeSupported -and $Detailed) {
                 if ($ExportCSV) {
-                    $output | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyState, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                    $output | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID | Export-Csv -path $OutputFullPath -NoTypeInformation
                     Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
                     return
                 }
                 else {
-                    $output | Sort-Object PolicyName, ID
+                    $output | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID
                 }
             }
             elseif ($Detailed) {
@@ -822,11 +812,11 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                 }
                 else {
                     if ($ExportCSV) {
-                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object PolicyName, PolicyID, PolicyState, AssignedToGroup, ExcludedFromGroup, TeamsDevicesStatus, Setting, SettingDescription, Value, Comment | Export-Csv -path $OutputFullPath -NoTypeInformation
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID | Export-Csv -path $OutputFullPath -NoTypeInformation
                         Write-Host ("Results available in: " + $OutputFullPath) -ForegroundColor Cyan
                     }
                     else {    
-                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID
+                        $output | Where-Object -Property TeamsDevicesStatus -NE -Value "Supported" | Sort-Object PolicyName, ID | Select-Object -ExcludeProperty ID
                     }
                 }
             }
