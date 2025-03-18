@@ -35,7 +35,7 @@ function Test-UcMgGraphConnection {
 
     #Checking if we have the required scopes.
     $currentScopes = $MgGraphContext.Scopes
-     $strScope = ""
+    $strScope = ""
     $strAltScope = ""
     $missingScopes = ""
     $missingAltScopes = ""
@@ -50,7 +50,7 @@ function Test-UcMgGraphConnection {
         }
     }
 
-    #20231013 - Added option to specify alternative scopes
+    #2023-10-13: Added option to specify alternative scopes
     if ($missingScope -and $AltScopes) {
         foreach ($altScope in $AltScopes) {
             $strAltScope += "`"" + $altScope + "`","
@@ -59,8 +59,9 @@ function Test-UcMgGraphConnection {
                 $missingAltScopes += $altScope + ","
             }
         }
-        #20231117 - Issue when AltScopes wasnt submitted
+       
     }
+    #2023-11-17:  Issue when AltScopes wasnt submitted
     else {
         $missingAltScope = $true
     }

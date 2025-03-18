@@ -469,5 +469,59 @@
 				</TableRowEntries>
 			</TableControl>
 		</View>
+		<View>
+			<Name>SetTeamsDeviceConfigurationProfile</Name>
+			<ViewSelectedBy>
+				<TypeName>SetTeamsDeviceConfigurationProfile</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<Label>TAC Device ID</Label>
+					</TableColumnHeader>
+					<TableColumnHeader/>
+					<TableColumnHeader/>
+					<TableColumnHeader>
+						<Label>Previous Config Profile</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>New Config Profile</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Status</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Configuration Update Status</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>DeviceTACID</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Manufacturer</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Model</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>PreviousConfigurationProfile</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>NewConfigurationProfile</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DeviceStatus</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>ConfigurationUpdateStatus</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
 	</ViewDefinitions>
 </Configuration>

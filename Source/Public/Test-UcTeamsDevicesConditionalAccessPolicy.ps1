@@ -429,9 +429,11 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                     $Setting = "deviceFilter"
                     $SettingDescription = "Assignment > Conditions > Filter for devices"
                     $Comment = ""
+                    $DeviceFilters = ""
                     if ($ConditionalAccessPolicy.conditions.devices.deviceFilter.mode -eq "exclude") {
                         $Status = "Supported"
                         $SettingValue = $ConditionalAccessPolicy.conditions.devices.deviceFilter.mode + ": " + $ConditionalAccessPolicy.conditions.devices.deviceFilter.rule
+                        $DeviceFilters = $ConditionalAccessPolicy.conditions.devices.deviceFilter.rule
                     }
                     else {
                         $SettingValue = "Not Configured"
@@ -456,7 +458,7 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
-                    #20240924 - Added check authentication flows
+                    #2024-09-24: Added check authentication flows
                     #region 9: Assignment > Conditions > Authentication flows
                     $ID = 9
                     $Setting = "authenticationFlows"
@@ -759,7 +761,11 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                     [void]$output.Add($SettingPSObj)
                     #endregion
 
-                    if ($PolicyErrors -gt 0) {
+                    #2025-03-11: If a policy has unsupported settings but has device filters we should ignore it.
+                    if(!([string]::IsNullOrEmpty($DeviceFilters)) -and ($PolicyErrors -gt 0 -or $PolicyWarnings -gt 0)){
+                        $StatusSum = "Excluded with Device Filter: " + $DeviceFilters.Replace("device.","")
+                    }
+                    elseif ($PolicyErrors -gt 0) {
                         $StatusSum = "Has " + $PolicyErrors + " unsupported settings."
                         $displayWarning = $true
                     }
@@ -822,7 +828,7 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
             }
             else {
                 if (($skippedCAPolicies -gt 0) -and !$All) {
-                    Write-Warning ("Skipping $skippedCAPolicies conditional access policies since they will not be applied to Teams Devices")
+                    Write-Warning ("Skipping $skippedCAPolicies conditional access policies since they will not be applied to Teams Devices (Disabled Policy/Not assigned to Group or User/Without related Target Resources)")
                     Write-Warning ("Please use the All switch to check all policies: Test-UcTeamsDevicesConditionalAccessPolicy -All")
                 }
                 if ($displayWarning) {

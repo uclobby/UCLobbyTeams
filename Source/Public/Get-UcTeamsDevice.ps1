@@ -8,10 +8,12 @@ function Get-UcTeamsDevice {
 
         Contributors: David Paulino, Silvio Schanz, Gonçalo Sepulveda, Bryan Kendrick and Daniel Jelinek
 
-        Requirements:   Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph)
+        Requirements:   Microsoft Graph PowerShell Module (Install-Module Microsoft.Graph.Authentication)
                         Microsoft Graph Scopes:
                                 "TeamworkDevice.Read.All"
                                 "User.Read.All"
+                        
+                        UseTac parameter requires EntraAuth PowerShell Module
 
         .PARAMETER Filter
         Specifies a filter, valid options:
@@ -35,6 +37,9 @@ function Get-UcTeamsDevice {
         .PARAMETER UseTAC
         When present it will use the Teams Admin Center API to get the Teams Devices information.
 
+        .PARAMETER TACDeviceID
+        Allows specifying a single Teams Device using the Device ID used by TAC.
+
         .EXAMPLE 
         PS> Get-UcTeamsDevice
 
@@ -51,11 +56,13 @@ function Get-UcTeamsDevice {
         [switch]$Detailed,
         [switch]$ExportCSV,
         [string]$OutputPath,
-        [switch]$UseTAC
+        [switch]$UseTAC,
+        [string]$TACDeviceID
     )
 
     $outTeamsDevices = [System.Collections.ArrayList]::new()
     $devicesProcessed = 0
+    $BaseDevicesAPIPath = "api/v2/devices"
 
     if ($ExportCSV) {
         $Detailed = $true
@@ -80,95 +87,107 @@ function Get-UcTeamsDevice {
     
     if ($UseTAC) {
         #region 2025-01-29: Using TAC API
-        $tmpFileName = "MSTeamsDevicesTAC_" + $Filter + "_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
-        switch ($Filter) {
-            "Phone" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"IpPhone`",`"LowCostPhone`"]}}" }
-            "MTR" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsRoom`",`"collaborationBar`",`"touchConsole`"]}}" }
-            "MTRW" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsRoom`"]}}" }
-            "MTRA" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"collaborationBar`",`"touchConsole`"]}}" }
-            "SurfaceHub" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"surfaceHub`"]}}" }
-            "Display" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsDisplay`"]}}" }
-            "Panel" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsPanel`"]}}" }
-            "SIPPhone" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"sip`"]}}" }
-            default {
-                $DeviceFilter = $null
-                $tmpFileName = "MSTeamsDevices_All_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
-            }
-        }
-        if ($DeviceFilter) {
-            $RequestUri = "https://admin.devicemgmt.teams.microsoft.com/api/v2/devices?filterJson= " + [System.Web.HttpUtility]::UrlEncode($DeviceFilter)
-        }
-        else {
-            $RequestUri = "https://admin.devicemgmt.teams.microsoft.com/api/v2/devices"
-        }
-        #TODO: Page iteration will be required for larger deployments.
-        $TeamsDevices = Invoke-UcTacApiRequest $RequestUri
-    
-        foreach ($TeamsDevice in $TeamsDevices.devices) {
-            $outMacAddress = ""
-            foreach ($macAddressInfo in $TeamsDevice.macAddressInfos) {
-                $outMacAddress += $macAddressInfo.interfaceType + ":" + $macAddressInfo.macAddress + ";"
-            }
-            if ($Detailed) {
-                #Getting the Health Info
-                $HealthURI = "https://admin.devicemgmt.teams.microsoft.com/api/v2/devices/" + $TeamsDevice.baseInfo.id + "/health"
-                $TeamsDeviceHealth = Invoke-UcTacApiRequest $HealthURI
-    
-                $TDObj = [PSCustomObject][Ordered]@{
-                    TACDeviceID            = $TeamsDevice.baseInfo.id
-                    DeviceType             = Convert-UcTeamsDeviceType $TeamsDevice.deviceType
-                    Manufacturer           = $TeamsDevice.deviceModelRef.manufacturer
-                    Model                  = $TeamsDevice.deviceModelRef.model
-                    UserDisplayName        = $TeamsDevice.lastLoggedInUserRef.userName
-                    UserUPN                = $TeamsDevice.lastLoggedInUserRef.upn
-                    License                = $TeamsDevice.licenseDetails.effectiveLicense.friendlyName
-                    SignInMode             = Convert-UcTeamsDeviceSignInMode $TeamsDevice.userType
-                    Notes                  = $TeamsDevice.notes
-                    CompanyAssetTag        = $TeamsDevice.companyAssetTag
-                    SerialNumber           = $TeamsDevice.deviceIds.oemSerialNumber 
-                    MacAddresses           = $outMacAddress
-                    ipAddress              = $TeamsDevice.ipAddress
-                    DeviceHealth           = $TeamsDevice.healthSummary.healthState
-                    WhenCreated            = (Get-Date "01/01/1970").AddMilliseconds($TeamsDevice.baseInfo.createdAt)
-                    WhenChanged            = (Get-Date "01/01/1970").AddMilliseconds($TeamsDevice.baseInfo.modifiedAt)
-                    ChangedByUser          = $TeamsDevice.baseInfo.modifiedByUserName
-    
-                    #Current Versions
-                    TeamsAdminAgentVersion = $TeamsDeviceHealth.softwareHealth.adminagent.currentversion.versionname
-                    FirmwareVersion        = $TeamsDeviceHealth.softwarehealth.firmware.currentVersion.versionName
-                    CompanyPortalVersion   = $TeamsDeviceHealth.softwarehealth.companyPortal.currentVersion.versionName 
-                    OEMAgentAppVersion     = $TeamsDeviceHealth.softwarehealth.partnerAgent.currentVersion.versionName 
-                    TeamsAppVersion        = $TeamsDeviceHealth.softwarehealth.teamsApp.currentVersion.versionName 
-                    AutomaticUpdates       = Convert-UcTeamsDeviceAutoUpdateDays $TeamsDevice.administrationConfig.autoUpdateFrequencyInDays
-                    ConfigurationProfile   = $TeamsDevice.configRef.name
+        if (Test-UcAPIConnection -Type TeamsDeviceTAC) {
+            if ($TACDeviceID) {
+                try { 
+                    $TeamsDevices = Invoke-EntraRequest -Path ($BaseDevicesAPIPath + "/" + $TACDeviceID) -Service TeamsDeviceTAC
+                }
+                catch {
+                    Write-Warning "Please check the TAC Device Id ($TACDeviceID) and try again."
+                    return $null
                 }
             }
             else {
-                $TDObj = [PSCustomObject][Ordered]@{
-                    TACDeviceID          = $TeamsDevice.baseInfo.id
-                    DeviceType           = Convert-UcTeamsDeviceType $TeamsDevice.deviceType
-                    Manufacturer         = $TeamsDevice.deviceModelRef.manufacturer
-                    Model                = $TeamsDevice.deviceModelRef.model
-                    UserDisplayName      = $TeamsDevice.lastLoggedInUserRef.userName
-                    UserUPN              = $TeamsDevice.lastLoggedInUserRef.upn
-                    DeviceHealth         = $TeamsDevice.healthSummary.healthState
-                    #region Details that are in the device info but only shown if we do Format-List (FL)
-                    SerialNumber         = $TeamsDevice.deviceIds.oemSerialNumber 
-                    MacAddresses         = $outMacAddress
-                    License              = $TeamsDevice.licenseDetails.effectiveLicense.friendlyName
-                    SignInMode           = Convert-UcTeamsDeviceSignInMode $TeamsDevice.userType
-                    ipAddress            = $TeamsDevice.ipAddress
-                    AutomaticUpdates     = Convert-UcTeamsDeviceAutoUpdateDays $TeamsDevice.administrationConfig.autoUpdateFrequencyInDays
-                    ConfigurationProfile = $TeamsDevice.configRef.name
-                    WhenCreated          = (Get-Date "01/01/1970").AddMilliseconds($TeamsDevice.baseInfo.createdAt)
-                    WhenChanged          = (Get-Date "01/01/1970").AddMilliseconds($TeamsDevice.baseInfo.modifiedAt)
-                    ChangedByUser        = $TeamsDevice.baseInfo.modifiedByUserName
-                    #endregion
+                $tmpFileName = "MSTeamsDevicesTAC_" + $Filter + "_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
+                switch ($Filter) {
+                    "Phone" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"IpPhone`",`"LowCostPhone`"]}}" }
+                    "MTR" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsRoom`",`"collaborationBar`",`"touchConsole`"]}}" }
+                    "MTRW" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsRoom`"]}}" }
+                    "MTRA" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"collaborationBar`",`"touchConsole`"]}}" }
+                    "SurfaceHub" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"surfaceHub`"]}}" }
+                    "Display" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsDisplay`"]}}" }
+                    "Panel" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"teamsPanel`"]}}" }
+                    "SIPPhone" { $DeviceFilter = "{`"deviceTypes`":{`"eq`":[`"sip`"]}}" }
+                    default {
+                        $DeviceFilter = $null
+                        $tmpFileName = "MSTeamsDevices_All_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
+                    }
                 }
-                $TDObj.PSObject.TypeNames.Insert(0, 'TeamsDevice')
+                if ($DeviceFilter) {
+                    $RequestPath = $BaseDevicesAPIPath + "?filterJson= " + [System.Web.HttpUtility]::UrlEncode($DeviceFilter)
+                }
+                else {
+                    $RequestPath = $BaseDevicesAPIPath
+                }
+                #TODO: Page iteration will be required for larger deployments.
+                $TeamsDevices = (Invoke-EntraRequest -Path $RequestPath -Service TeamsDeviceTAC).devices
             }
-            [void]$outTeamsDevices.Add($TDObj)
-            $devicesProcessed++
+            foreach ($TeamsDevice in $TeamsDevices) {
+                $outMacAddress = ""
+                foreach ($macAddressInfo in $TeamsDevice.macAddressInfos) {
+                    $outMacAddress += $macAddressInfo.interfaceType + ":" + $macAddressInfo.macAddress + ";"
+                }
+                if ($Detailed) {
+                    #Getting the Health Info
+                    $RequestHealthPath = $BaseDevicesAPIPath + "/" + $TeamsDevice.baseInfo.id + "/health"
+                    $TeamsDeviceHealth = Invoke-EntraRequest -Path $RequestHealthPath -Service TeamsDeviceTAC
+    
+                    $TDObj = [PSCustomObject][Ordered]@{
+                        TACDeviceID            = $TeamsDevice.baseInfo.id
+                        DeviceType             = Convert-UcTeamsDeviceType $TeamsDevice.deviceType
+                        Manufacturer           = $TeamsDevice.deviceModelRef.manufacturer
+                        Model                  = $TeamsDevice.deviceModelRef.model
+                        UserDisplayName        = $TeamsDevice.lastLoggedInUserRef.userName
+                        UserUPN                = $TeamsDevice.lastLoggedInUserRef.upn
+                        License                = $TeamsDevice.licenseDetails.effectiveLicense.friendlyName
+                        SignInMode             = Convert-UcTeamsDeviceSignInMode $TeamsDevice.userType
+                        Notes                  = $TeamsDevice.notes
+                        CompanyAssetTag        = $TeamsDevice.companyAssetTag
+                        SerialNumber           = $TeamsDevice.deviceIds.oemSerialNumber 
+                        MacAddresses           = $outMacAddress
+                        ipAddress              = $TeamsDevice.ipAddress
+                        DeviceHealth           = $TeamsDevice.healthSummary.healthState
+                        WhenCreated            = (Get-Date "01/01/1970").AddSeconds($TeamsDevice.baseInfo.createdAt).ToLocalTime()
+                        WhenChanged            = (Get-Date "01/01/1970").AddSeconds($TeamsDevice.baseInfo.modifiedAt).ToLocalTime()
+                        ChangedByUser          = $TeamsDevice.baseInfo.modifiedByUserName
+    
+                        #Current Versions
+                        TeamsAdminAgentVersion = $TeamsDeviceHealth.softwareHealth.adminagent.currentversion.versionname
+                        FirmwareVersion        = $TeamsDeviceHealth.softwarehealth.firmware.currentVersion.versionName
+                        CompanyPortalVersion   = $TeamsDeviceHealth.softwarehealth.companyPortal.currentVersion.versionName 
+                        OEMAgentAppVersion     = $TeamsDeviceHealth.softwarehealth.partnerAgent.currentVersion.versionName 
+                        TeamsAppVersion        = $TeamsDeviceHealth.softwarehealth.teamsApp.currentVersion.versionName 
+                        AutomaticUpdates       = Convert-UcTeamsDeviceAutoUpdateDays $TeamsDevice.administrationConfig.autoUpdateFrequencyInDays
+                        ConfigurationProfile   = $TeamsDevice.configRef.name
+                    }
+                }
+                else {
+                    $TDObj = [PSCustomObject][Ordered]@{
+                        TACDeviceID          = $TeamsDevice.baseInfo.id
+                        DeviceType           = Convert-UcTeamsDeviceType $TeamsDevice.deviceType
+                        Manufacturer         = $TeamsDevice.deviceModelRef.manufacturer
+                        Model                = $TeamsDevice.deviceModelRef.model
+                        UserDisplayName      = $TeamsDevice.lastLoggedInUserRef.userName
+                        UserUPN              = $TeamsDevice.lastLoggedInUserRef.upn
+                        DeviceHealth         = $TeamsDevice.healthSummary.healthState
+                        #region Details that are in the device info but only shown if we do Format-List (FL)
+                        SerialNumber         = $TeamsDevice.deviceIds.oemSerialNumber 
+                        MacAddresses         = $outMacAddress
+                        License              = $TeamsDevice.licenseDetails.effectiveLicense.friendlyName
+                        SignInMode           = Convert-UcTeamsDeviceSignInMode $TeamsDevice.userType
+                        ipAddress            = $TeamsDevice.ipAddress
+                        AutomaticUpdates     = Convert-UcTeamsDeviceAutoUpdateDays $TeamsDevice.administrationConfig.autoUpdateFrequencyInDays
+                        ConfigurationProfile = $TeamsDevice.configRef.name
+                        WhenCreated          = (Get-Date "01/01/1970").AddSeconds($TeamsDevice.baseInfo.createdAt).ToLocalTime()
+                        WhenChanged          = (Get-Date "01/01/1970").AddSeconds($TeamsDevice.baseInfo.modifiedAt).ToLocalTime()
+                        ChangedByUser        = $TeamsDevice.baseInfo.modifiedByUserName
+                        #endregion
+                    }
+                    $TDObj.PSObject.TypeNames.Insert(0, 'TeamsDevice')
+                }
+                [void]$outTeamsDevices.Add($TDObj)
+                $devicesProcessed++
+            }
         }
         #endregion
     }
@@ -176,106 +195,118 @@ function Get-UcTeamsDevice {
         if (Test-UcMgGraphConnection -Scopes "TeamworkDevice.Read.All", "User.Read.All" -AltScopes ("TeamworkDevice.Read.All", "Directory.Read.All")) {
             $graphRequests = [System.Collections.ArrayList]::new()
             $tmpFileName = "MSTeamsDevices_" + $Filter + "_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
-            switch ($filter) {
-                "Phone" { 
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "ipPhone"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'ipPhone'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "lowCostPhone"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'lowCostPhone'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
+            if ($TACDeviceID) {
+                $gRequestTmp = [PSCustomObject]@{
+                    id     = "ipPhone"
+                    method = "GET"
+                    url    = "/teamwork/devices/" + $TACDeviceID 
                 }
-                "MTR" {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "teamsRoom"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsRoom'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "collaborationBar"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'collaborationBar'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "touchConsole"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'touchConsole'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                }
-                "MTRW" {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "teamsRoom"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsRoom'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                }
-                "MTRA" {            
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "collaborationBar"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'collaborationBar'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "touchConsole"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'touchConsole'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                }
-                "SurfaceHub" {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "surfaceHub"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'surfaceHub'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                }
-                "Display" {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "teamsDisplay"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsDisplay'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                }
-                "Panel" {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "teamsPanel"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsPanel'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                }
-                "SIPPhone" {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = "sip"
-                        method = "GET"
-                        url    = "/teamwork/devices/?`$filter=deviceType eq 'sip'"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                }
-                Default {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
-                        id     = 1
-                        method = "GET"
-                        url    = "/teamwork/devices"
-                    }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $tmpFileName = "MSTeamsDevices_All_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
-                }
+                [void]$graphRequests.Add($gRequestTmp)
+                $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcTeamsDevice, getting Teams device info")
             }
-            $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcTeamsDevice, getting Teams device info").value
+            else {
+                switch ($filter) {
+                    "Phone" { 
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "ipPhone"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'ipPhone'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "lowCostPhone"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'lowCostPhone'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                    }
+                    "MTR" {
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "teamsRoom"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsRoom'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp) 
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "collaborationBar"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'collaborationBar'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "touchConsole"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'touchConsole'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                    }
+                    "MTRW" {
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "teamsRoom"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsRoom'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                    }
+                    "MTRA" {            
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "collaborationBar"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'collaborationBar'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp) 
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "touchConsole"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'touchConsole'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                    }
+                    "SurfaceHub" {
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "surfaceHub"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'surfaceHub'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                    }
+                    "Display" {
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "teamsDisplay"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsDisplay'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                    }
+                    "Panel" {
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "teamsPanel"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'teamsPanel'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp) 
+                    }
+                    "SIPPhone" {
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = "sip"
+                            method = "GET"
+                            url    = "/teamwork/devices/?`$filter=deviceType eq 'sip'"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                    }
+                    default {
+                        $gRequestTmp = [PSCustomObject]@{
+                            id     = 1
+                            method = "GET"
+                            url    = "/teamwork/devices"
+                        }
+                        [void]$graphRequests.Add($gRequestTmp)
+                        $tmpFileName = "MSTeamsDevices_All_" + ( get-date ).ToString('yyyyMMdd-HHmmss') + ".csv"
+                    }
+                }
+                $TeamsDeviceList = (Invoke-UcMgGraphBatch -Requests $graphRequests -MgProfile beta -Activity "Get-UcTeamsDevice, getting Teams device info").value
+            }
+            
         
             #To improve performance we will use batch requests
             $graphRequests = [System.Collections.ArrayList]::new()
@@ -286,37 +317,36 @@ function Get-UcTeamsDevice {
                         method = "GET"
                         url    = "/users/" + $TeamsDevice.currentuser.id
                     }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
+                    [void]$graphRequests.Add($gRequestTmp)
                 }
                 if ($Detailed) {
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
+                    $gRequestTmp = [PSCustomObject]@{
                         id     = $TeamsDevice.id + "-activity"
                         method = "GET"
                         url    = "/teamwork/devices/" + $TeamsDevice.id + "/activity"
                     }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
+                    [void]$graphRequests.Add($gRequestTmp)
+                    $gRequestTmp = [PSCustomObject]@{
                         id     = $TeamsDevice.id + "-configuration"
                         method = "GET"
                         url    = "/teamwork/devices/" + $TeamsDevice.id + "/configuration"
                     }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
+                    [void]$graphRequests.Add($gRequestTmp)
+                    $gRequestTmp = [PSCustomObject]@{
                         id     = $TeamsDevice.id + "-health"
                         method = "GET"
                         url    = "/teamwork/devices/" + $TeamsDevice.id + "/health"
                     }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
-                    $gRequestTmp = New-Object -TypeName PSObject -Property @{
+                    [void]$graphRequests.Add($gRequestTmp)
+                    $gRequestTmp = [PSCustomObject]@{
                         id     = $TeamsDevice.id + "-operations"
                         method = "GET"
                         url    = "/teamwork/devices/" + $TeamsDevice.id + "/operations"
                     }
-                    $graphRequests.Add($gRequestTmp) | Out-Null
+                    [void]$graphRequests.Add($gRequestTmp)
                 } 
             }
             if ($graphRequests.Count -gt 0) {
-            
                 if ($Detailed) {
                     $ActivityInfo = "Get-UcTeamsDevice, getting Teams device addtional information (User UPN/Health/Operations/Configurarion)."
                 }

@@ -8,7 +8,7 @@ function Test-UcMicrosoftTeamsConnection {
     #>
     #Checking if MicrosoftTeams module is installed
     if (!(Get-Module MicrosoftTeams -ListAvailable)) {
-        Write-Warning ("Missing MicrosoftTemas PowerShell module. Please install it with:" + [Environment]::NewLine + "Install-Module MicrosoftTeams") 
+        Write-Warning ("Missing MicrosoftTeams PowerShell module. Please install it with:" + [Environment]::NewLine + "Install-Module MicrosoftTeams") 
         return $false
     }
     #We need to use a cmdlet to know if we are connected to MicrosoftTeams PowerShell

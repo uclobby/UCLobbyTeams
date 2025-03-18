@@ -1,5 +1,5 @@
 param(
-    [version]$Version = "0.7.1"
+    [version]$Version = "1.0.0"
 
 )
 #Requires -Module ModuleBuilder

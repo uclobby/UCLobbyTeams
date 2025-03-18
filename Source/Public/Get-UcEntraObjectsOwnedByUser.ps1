@@ -108,13 +108,13 @@ function Get-UcEntraObjectsOwnedByUser {
                 }
             }
             if ($tmpType -ne "NA") {
-                $UserObject = New-Object -TypeName PSObject -Property @{
+                $UserObject = [PSCustomObject][Ordered]@{
                     User            = $User
                     ObjectID        = $OwnedObject.id
                     DisplayName     = $OwnedObject.displayName
                     Type            = $tmpType
-                    CreatedDateTime = $OwnedObject.createdDateTime
                     Visibility      = $OwnedObject.visibility
+                    CreatedDateTime = $OwnedObject.createdDateTime
                 }
                 $UserObject.PSObject.TypeNames.Insert(0, 'EntraObjectsOwnedByUser')
                 [void]$output.Add($UserObject)

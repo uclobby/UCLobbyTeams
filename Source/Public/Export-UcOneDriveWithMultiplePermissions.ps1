@@ -37,6 +37,15 @@ function Export-UcOneDriveWithMultiplePermissions {
             Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
             $global:UCLobbyTeamsModuleCheck = $true
         }
+        #Graph API request is different when the tenant has multigeo
+        if ($MultiGeo) {
+            $outFile = "OneDrivePermissions_MultiGeo_" + (Get-Date).ToString('yyyyMMdd-HHmmss') + ".csv"
+            $GraphRequestSites = "https://graph.microsoft.com/v1.0/sites/getAllSites?`$select=id,displayName,isPersonalSite,WebUrl&`$top=999"
+        }
+        else {
+            $outFile = "OneDrivePermissions_" + (Get-Date).ToString('yyyyMMdd-HHmmss') + ".csv"
+            $GraphRequestSites = "https://graph.microsoft.com/v1.0/sites?`$select=id,displayName,isPersonalSite,WebUrl&`$top=999"
+        }
         #Verify if the Output Path exists
         if ($OutputPath) {
             if (!(Test-Path $OutputPath -PathType Container)) {
@@ -48,15 +57,7 @@ function Export-UcOneDriveWithMultiplePermissions {
         else {                
             $OutputFilePath = [System.IO.Path]::Combine($env:USERPROFILE, "Downloads", $outFile)
         }
-        #Graph API request is different when the tenant has multigeo
-        if ($MultiGeo) {
-            $outFile = "OneDrivePermissions_MultiGeo_" + (Get-Date).ToString('yyyyMMdd-HHmmss') + ".csv"
-            $GraphRequestSites = "https://graph.microsoft.com/v1.0/sites/getAllSites?`$select=id,displayName,isPersonalSite,WebUrl&`$top=999"
-        }
-        else {
-            $outFile = "OneDrivePermissions_" + (Get-Date).ToString('yyyyMMdd-HHmmss') + ".csv"
-            $GraphRequestSites = "https://graph.microsoft.com/v1.0/sites?`$select=id,displayName,isPersonalSite,WebUrl&`$top=999"
-        }
+
 
         $OneDriveProcessed = 0
         $OneDriveFound = 0 

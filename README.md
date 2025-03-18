@@ -21,8 +21,12 @@ Please use the PowerShell Gallery to install this module:
 <br/>Get-UcTeamsVersion
 <br/>Get-UcTeamsVersionBatch
 
+<br/>Connect-UcTeamsDeviceTAC
+
 <br/>Get-UcTeamsDevice
 <br/>Update-UcTeamsDevice
+<br/>Get-UcTeamsDeviceConfigurationProfile
+<br/>Set-UcTeamsDeviceConfigurationProfile
 
 <br/>Test-UcTeamsOnlyDNSRequirements
 <br/>Test-UcTeamsDevicesConditionalAccessPolicy
@@ -37,6 +41,26 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>1.0.0 - 2025/03/17
+<ul>
+<li>Get-UcTeamsDeviceConfigurationProfile
+<br/>New cmdlet: Returns all Teams Device Configuration Profiles.
+</li>
+<li>Set-UcTeamsDeviceConfigurationProfile
+<br/>New cmdlet: Allows to set a configuration profile to Teams Device (Phone, MTRoA and Panels).
+</li>
+<li>Connect-UcTeamsDeviceTAC
+<br/>New cmdlet: Connects to TAC Api using the EntraAuth PowerShell module to manage Authentication tokens/request.
+</li>
+<li>Get-UcTeamsDevice
+  <br/>Change: UseTAC switch requires EntraAuth PowerShell module instead of MSAL.PS.
+  <br/>Feature: Added TACDeviceID parameter in case we want to get the details for a single Teams Device, works with Graph API and UseTAC.
+  <br/>Fix: WhenCreated/WhenChanged was showing the wrong Date.
+</li>
+<li> Export-UcOneDriveWithMultiplePermissions
+  <br/>Fix: Issue with access denied while writing csv file. 
+</li>
+</ul>
 <br/>0.7.1 - 2025/02/03
 <ul>
 <li>Get-UcTeamsDevice
