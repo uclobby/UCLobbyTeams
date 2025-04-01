@@ -7,7 +7,7 @@ function Get-UcM365Domains {
         This function returns a list of domains that are associated with a Microsoft 365 Tenant.
 
         .PARAMETER Domain
-        Specifies a domain registered with Microsoft 365
+        Specifies a domain registered with Microsoft 365.
 
         .EXAMPLE
         PS> Get-UcM365Domains -Domain uclobby.com

@@ -6,6 +6,8 @@ function Get-UcTeamsWithSingleOwner {
         .DESCRIPTION
         This function returns a list of Teams that only have a single owner.
 
+        Requirements:   Microsoft Teams PowerShell Module (Install-Module MicrosoftTeams)
+
         .EXAMPLE
         PS> Get-UcTeamsWithSingleOwner
     #>

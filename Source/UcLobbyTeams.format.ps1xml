@@ -183,10 +183,13 @@
 			<TableControl>
 				<TableHeaders>
 					<TableColumnHeader>
-						<Label>Conditional Access Policy   </Label>
+						<Label>Conditional Access Policy</Label>
 					</TableColumnHeader>
 					<TableColumnHeader>
 						<Label>Policy State</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Access Type</Label>
 					</TableColumnHeader>
 					<TableColumnHeader>
 						<Label>Assigned To</Label>
@@ -206,6 +209,9 @@
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>PolicyState</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>AccessType</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>AssignedToGroup</PropertyName>
@@ -336,19 +342,19 @@
 			</TableControl>
 		</View>
 		<View>
-			<Name>TeamsDeviceEnrollmentPolicy</Name>
+			<Name>TeamsDeviceEnrollmentProfile</Name>
 			<ViewSelectedBy>
-				<TypeName>TeamsDeviceEnrollmentPolicy</TypeName>
+				<TypeName>TeamsDeviceEnrollmentProfile</TypeName>
 			</ViewSelectedBy>
 			<TableControl>
 				<TableHeaders>
+					<TableColumnHeader>
+						<Label>Enrollment Profile</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Platform Type</Label>
+					</TableColumnHeader>
 					<TableColumnHeader />
-					<TableColumnHeader>
-						<Label>Enrollment Policy</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>Priority</Label>
-					</TableColumnHeader>
 					<TableColumnHeader>
 						<Label>Assign Group(s)</Label>
 					</TableColumnHeader>
@@ -360,13 +366,13 @@
 					<TableRowEntry>
 						<TableColumnItems>
 							<TableColumnItem>
-								<PropertyName>PolicyName</PropertyName>
+								<PropertyName>EnrollmentProfileName</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>PlatformType</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>PolicyPriority</PropertyName>
+								<PropertyName>Priority</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>AssignedToGroup</PropertyName>
@@ -463,6 +469,54 @@
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>CreatedDateTime</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+				<View>
+			<Name>TeamsDeviceConfigurationProfile</Name>
+			<ViewSelectedBy>
+				<TypeName>TeamsDeviceConfigurationProfile</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader/>
+					<TableColumnHeader>
+						<Label>Display Name</Label>
+					</TableColumnHeader>
+					<TableColumnHeader/>
+					<TableColumnHeader>
+						<Label>Device Type</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Last Change Date</Label>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Label>Last Change User</Label>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>Identity</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DisplayName</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Description</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>DeviceType</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>WhenChanged</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>ChangedByUser</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>

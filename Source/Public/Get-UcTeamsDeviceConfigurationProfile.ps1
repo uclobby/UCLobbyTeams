@@ -11,7 +11,7 @@ function Get-UcTeamsDeviceConfigurationProfile {
         .PARAMETER Filter
         Specifies a filter, valid options:
             Phone - Teams Native Phones
-            MTR - Microsoft Teams Rooms running Windows or Android
+            MTR - Microsoft Teams Rooms running Android
             Display - Microsoft Teams Displays 
             Panel - Microsoft Teams Panels
 
@@ -34,7 +34,7 @@ function Get-UcTeamsDeviceConfigurationProfile {
         $global:UCLobbyTeamsModuleCheck = $true
     }
 
-    if (Test-UcAPIConnection -Type TeamsDeviceTAC) {
+    if (Test-UcServiceConnection -Type TeamsDeviceTAC) {
         if ($Identity) {
             $RequestPath = $BaseAPIPath + "/" + $Identity
             try{
@@ -225,6 +225,6 @@ function Get-UcTeamsDeviceConfigurationProfile {
             $TDObj.PSObject.TypeNames.Insert(0, 'TeamsDeviceConfigurationProfile')
             [void]$outTeamsDeviceConfiguration.Add($TDObj)
         }
-        return $outTeamsDeviceConfiguration | Sort-Object DeviceType
+        return $outTeamsDeviceConfiguration | Sort-Object DeviceType, DisplayName
     }
 }

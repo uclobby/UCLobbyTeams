@@ -6,8 +6,10 @@ function Get-UcTeamUsersEmail {
         .DESCRIPTION
         This function returns a list of users email address that are part of a Team.
 
+        Requirements:   Microsoft Teams PowerShell Module (Install-Module MicrosoftTeams)
+
         .PARAMETER TeamName
-        Specifies Team Name
+        Specifies Team Name.
 
         .PARAMETER Role
         Specifies which roles to filter (Owner, User, Guest)
@@ -30,14 +32,19 @@ function Get-UcTeamUsersEmail {
         [ValidateSet("Owner", "User", "Guest")] 
         [string]$Role
     )
-
-    $output = [System.Collections.ArrayList]::new()
-
+    
+    #region 2025-03-31: Check if connected with Teams PowerShell module. 
+    if (!(Test-UcServiceConnection -Type TeamsPowerShell)) {
+        return
+    }
     #2025-01-31: Only need to check this once per PowerShell session
     if (!($global:UCLobbyTeamsModuleCheck)) {
         Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         $global:UCLobbyTeamsModuleCheck = $true
     }
+    #endregion
+
+    $output = [System.Collections.ArrayList]::new()
     if ($TeamName) {
         $Teams = Get-Team -DisplayName $TeamName
     }
@@ -67,7 +74,7 @@ function Get-UcTeamUsersEmail {
         }
         foreach ($TeamMember in $TeamMembers) {
             $Email = ( Get-csOnlineUser $TeamMember.User | Select-Object @{Name = 'PrimarySMTPAddress'; Expression = { $_.ProxyAddresses -cmatch '^SMTP:' -creplace 'SMTP:' } }).PrimarySMTPAddress
-            $Member = New-Object -TypeName PSObject -Property @{
+            $Member = [PSCustomObject][Ordered]@{
                 TeamGroupID     = $Team.GroupID
                 TeamDisplayName = $Team.DisplayName
                 TeamVisibility  = $Team.Visibility
@@ -76,7 +83,7 @@ function Get-UcTeamUsersEmail {
                 Email           = $Email
             }
             $Member.PSObject.TypeNames.Insert(0, 'TeamUsersEmail')
-            $output.Add($Member) | Out-Null
+            [void]$output.Add($Member) 
         }
     }
     return $output

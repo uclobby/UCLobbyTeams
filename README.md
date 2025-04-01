@@ -30,7 +30,7 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Test-UcTeamsOnlyDNSRequirements
 <br/>Test-UcTeamsDevicesConditionalAccessPolicy
-<br/>Test-UcTeamsDevicesEnrollmentPolicy
+<br/>Test-UcTeamsDevicesEnrollmentProfile
 <br/>Test-UcTeamsDevicesCompliancePolicy
 
 <br/>Get-UcArch
@@ -41,6 +41,36 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>1.1.0 - 2025/04/01
+<ul>
+<li>Get-UcTeamsDevice
+<br/>Update: UseTAC - Additional values in the output, Configuration Profile ID, Pairing Status, LastTACHeartBeat and  Current Firmware Ring.
+<br/>Update: UseTAC + Detailed - Additional values in the output (LastHistory*) 
+<br/>Fix: "You cannot call a method on a null-valued expression" if Configuration Creation Date was empty.
+</li>
+<li>Test-UcTeamsDevicesConditionalAccessPolicy
+  <br/>Major: Support for EntraAuth module to handle authentication/requests
+  <br/>Fix: If only users were assigned the policy was skipped.
+  <br/>Update: New input parameter PolicyID
+  <br/>Update: New input parameter DeviceType ("MTRWindows", "MTRAndroidAndPanel", "PhoneAndDisplay")
+  <br/>Update: Support for -Verbose, also some warning messages were moved to verbose.
+  <br/>Update: New check for MFA requirement in Access controls > Grant > Require Authentication Strength.
+  <br/>Update: New check for unsupported settings, Continuous Access Evaluation (CAE), Disable Resilience Defaults, Require token protection for sign-in sessions.
+  <br/>Update: Conditions > Device Platform is now taking into consideration since Teams Devices are Windows/Android only.
+  <br/>Update: Blocking CAs will only be displayed if contains one or more target resources required by Teams Devices.
+  <br/>Update: New column in the output if the policy is Allow/Block.
+  <br/>Update: ExportCSV will output the detailed results without the need to specify the Detailed switch.
+</li>
+<li>Test-UcTeamsDevicesEnrollmentProfile
+  <br/>Major: Cmdlet change from Test-UcTeamsDevicesEnrollmentPolicies to Test-UcTeamsDevicesEnrollmentProfile
+  <br/>Major: Support for EntraAuth module to handle authentication/requests
+  <br/>Update: MS Graph Request with "?$expand=assignments" to reduce the number of requests.
+  <br/>Update: New input parameter PlatformType (AndroidDeviceAdministrator,AOSP)
+</li>
+<li>Export-UcM365LicenseAssignment, Export-UcOneDriveWithMultiplePermissions, Get-UcEntraObjectsOwnedByUser, Test-UcTeamsDevicesCompliancePolicy, Update-UcTeamsDevice
+  <br/>Major: Support for EntraAuth module to handle authentication/requests
+</li>
+</ul>
 <br/>1.0.0 - 2025/03/17
 <ul>
 <li>Get-UcTeamsDeviceConfigurationProfile

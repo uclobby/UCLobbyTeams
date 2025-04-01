@@ -9,10 +9,10 @@ function Set-UcTeamsDeviceConfigurationProfile {
         Requirements:   EntraAuth PowerShell Module (Install-Module EntraAuth)
 
         .PARAMETER TACDeviceID
-        Teams Device ID from Teams Admin Center
+        Teams Device ID from Teams Admin Center.
 
         .PARAMETER ConfigID
-        Teams Device Configuration Profile ID
+        Teams Device Configuration Profile ID.
 
         .EXAMPLE 
         PS> Set-UcTeamsDeviceConfigurationProfile -TACDeviceID "00000000-0000-0000-0000-000000000000" -ConfigID "00000000-0000-0000-0000-000000000000"
@@ -27,7 +27,7 @@ function Set-UcTeamsDeviceConfigurationProfile {
         Test-UcPowerShellModule -ModuleName UcLobbyTeams | Out-Null
         $global:UCLobbyTeamsModuleCheck = $true
     }
-    if (Test-UcAPIConnection -Type TeamsDeviceTAC) {
+    if (Test-UcServiceConnection -Type TeamsDeviceTAC) {
         $teamsDevices = [System.Collections.ArrayList]::new()
         $cmdUpdates = [System.Collections.ArrayList]::new()
         $output = [System.Collections.ArrayList]::new()

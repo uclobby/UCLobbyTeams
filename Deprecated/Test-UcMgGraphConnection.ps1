@@ -14,7 +14,6 @@ function Test-UcMgGraphConnection {
         When present it will get detailed information from Teams Devices
     #>
     param(
-        [Parameter(mandatory = $false)]
         [string[]]$Scopes,
         [string[]]$AltScopes,
         [ValidateSet("AppOnly", "Delegated")]
