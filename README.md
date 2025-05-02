@@ -41,6 +41,11 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>1.1.1 - 2025/05/02
+<ul>
+<li>Fix: Error getting Graph responses when using Microsoft Graph Authentication PowerShell Module.
+</li>
+</ul>
 <br/>1.1.0 - 2025/04/01
 <ul>
 <li>Get-UcTeamsDevice

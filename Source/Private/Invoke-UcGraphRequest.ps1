@@ -53,10 +53,10 @@ function Invoke-UcGraphRequest {
         }
         else {
             if ($Header) {
-                $GraphResponse = Invoke-MgGraphRequest -Uri ("/v1.0" + $Path) -Headers $Header
+                $GraphResponse = Invoke-MgGraphRequest -Uri ("/v1.0/" + $Path) -Headers $Header
             }
             else {
-                $GraphResponse = Invoke-MgGraphRequest -Uri ("/v1.0" + $Path)
+                $GraphResponse = Invoke-MgGraphRequest -Uri ("/v1.0/" + $Path)
             }
             #When it's more than one result Invoke-MgGraphRequest returns "value", we need to remove it to match EntraAuth behaviour.
             if ($GraphResponse.value) {
