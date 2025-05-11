@@ -41,6 +41,12 @@ Please use the PowerShell Gallery to install this module:
 
 <br/>Change Log:
 
+<br/>1.1.2 - 2025/05/11
+<ul>
+<li>Get-UcTeamsDevice
+<br/>Fix: Error parsing dates in detailed view
+</li>
+</ul>
 <br/>1.1.1 - 2025/05/02
 <ul>
 <li>Fix: Error getting Graph responses when using Microsoft Graph Authentication PowerShell Module.

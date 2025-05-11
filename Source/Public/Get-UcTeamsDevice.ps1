@@ -145,7 +145,7 @@ function Get-UcTeamsDevice {
                     #$RequestHealthPath = $BaseDevicesAPIPath + "/" + $TeamsDevice.baseInfo.id + "/health"
                     #$TeamsDeviceHealth = Invoke-EntraRequest -Path $RequestHealthPath -Service TeamsDeviceTAC
                     $RequestOperationPath = $BaseDevicesAPIPath + "/" + $TeamsDevice.baseInfo.id + "/commands?FetchInitiatorInfo=true"
-                    $LastTeamsDeviceOperation = (Invoke-EntraRequest -Path $RequestOperationPath -Service TeamsDeviceTAC).commands | Sort-Object queuedAt -Descending -Top 1
+                    $LastTeamsDeviceOperation = (Invoke-EntraRequest -Path $RequestOperationPath -Service TeamsDeviceTAC).commands | Sort-Object queuedAt -Descending | Select-Object -First 1
 
                     $lastHistoryInitiatedByName = "System (Automatic)"
                     $lastHistoryInitiatedByUpn = ""
@@ -420,6 +420,21 @@ function Get-UcTeamsDevice {
                 $tmpDeviceType = Convert-UcTeamsDeviceType $TeamsDevice.deviceType
             }
 
+            $outMacAddress = ""
+            foreach ($macAddress in $TeamsDevice.hardwaredetail.macAddresses) {
+                $outMacAddress += $macAddress + ";"
+            }
+
+            #region 2025-05-11: Fix improving date parsing
+            $tmpWhenCreated = ""
+            if ($TeamsDevice.createdDateTime) {
+                $tmpWhenCreated = (Get-Date ($TeamsDevice.createdDateTime)).ToLocalTime()
+            }
+            if ($TeamsDevice.lastModifiedDateTime) {
+                $tmpWhenChanged = (Get-Date ($TeamsDevice.lastModifiedDateTime)).ToLocalTime()
+            }
+            #endregion
+
             if ($Detailed) {
                 $TeamsDeviceConfiguration = ""
                 $TeamsDeviceActivity = ($graphResponseExtra | Where-Object { $_.id -eq ($TeamsDevice.id + "-activity") }).body
@@ -431,7 +446,10 @@ function Get-UcTeamsDevice {
                     $LastHistoryAction = $TeamsDeviceOperations[0].operationType
                     $LastHistoryStatus = $TeamsDeviceOperations[0].status
                     $LastHistoryInitiatedBy = $TeamsDeviceOperations[0].createdBy.user.displayName
-                    $LastHistoryModifiedDate = ($TeamsDeviceOperations[0].lastActionDateTime).ToLocalTime()
+                    $LastHistoryModifiedDate = ""
+                    if(($TeamsDeviceOperations[0].lastActionDateTime)){
+                        $LastHistoryModifiedDate = (Get-Date $TeamsDeviceOperations[0].lastActionDateTime).ToLocalTime()
+                    }
                     $LastHistoryErrorCode = $TeamsDeviceOperations[0].error.code
                     $LastHistoryErrorMessage = $TeamsDeviceOperations[0].error.message
                 }
@@ -444,21 +462,23 @@ function Get-UcTeamsDevice {
                     $LastHistoryErrorMessage = ""
                 }
 
-                $outMacAddress = ""
-                foreach ($macAddress in $TeamsDevice.hardwaredetail.macAddresses) {
-                    $outMacAddress += $macAddress + ";"
-                }
+                
                 #region 2025-03-31: Fix "You cannot call a method on a null-valued expression" if date were empty.
                 $tmpConfigurationCreateDate = ""
                 $tmpConfigurationLastModifiedDate = ""
                 if ($TeamsDeviceConfiguration.createdDateTime) {
-                    $tmpConfigurationCreateDate.ToLocalTime()
+                    $tmpConfigurationCreateDate = (Get-Date $TeamsDeviceConfiguration.createdDateTime).ToLocalTime()
                 }
                 if ($TeamsDeviceConfiguration.lastModifiedDateTime) {
-                    $TeamsDeviceConfiguration.lastModifiedDateTime.ToLocalTime()
+                    $tmpConfigurationLastModifiedDate = (Get-Date $TeamsDeviceConfiguration.lastModifiedDateTime).ToLocalTime()
                 }
                 #endregion
-        
+
+                $tmpConnectionLastActivity = ""
+                if ($TeamsDeviceHealth.connection.lastModifiedDateTime){
+                    $tmpConnectionLastActivity = (Get-Date $TeamsDeviceHealth.connection.lastModifiedDateTime).ToLocalTime()
+                }
+               
                 $TDObj = [PSCustomObject][Ordered]@{
                     TACDeviceID                   = $TeamsDevice.id
                     DeviceType                    = $tmpDeviceType
@@ -471,8 +491,8 @@ function Get-UcTeamsDevice {
                     SerialNumber                  = $TeamsDevice.hardwaredetail.serialNumber 
                     MacAddresses                  = $outMacAddress
                     DeviceHealth                  = $TeamsDevice.healthStatus
-                    WhenCreated                   = ($TeamsDevice.createdDateTime).ToLocalTime()
-                    WhenChanged                   = ($TeamsDevice.lastModifiedDateTime).ToLocalTime()
+                    WhenCreated                   = $tmpWhenCreated
+                    WhenChanged                   = $tmpWhenChanged
                     ChangedByUser                 = $TeamsDevice.lastModifiedBy.user.displayName
         
                     #Activity
@@ -495,7 +515,7 @@ function Get-UcTeamsDevice {
                     #Health
                     #2024-04-17: Added connection fields
                     ConnectionStatus              = $TeamsDeviceHealth.connection.connectionStatus
-                    ConnectionLastActivity        = ($TeamsDeviceHealth.connection.lastModifiedDateTime).ToLocalTime()
+                    ConnectionLastActivity        = $tmpConnectionLastActivity
                     
                     ComputeStatus                 = $TeamsDeviceHealth.hardwareHealth.computeHealth.connection.connectionStatus
                     HdmiIngestStatus              = $TeamsDeviceHealth.hardwareHealth.hdmiIngestHealth.connection.connectionStatus
@@ -533,9 +553,9 @@ function Get-UcTeamsDevice {
                     #2024-04-19: Adding additional fields that are available on graph api
                     #region Details that are in the device info but only shown if we do Format-List (FL)
                     SerialNumber    = $TeamsDevice.hardwaredetail.serialNumber 
-                    MacAddresses    = $TeamsDevice.hardwaredetail.macAddresses
-                    WhenCreated     = ($TeamsDevice.createdDateTime).ToLocalTime()
-                    WhenChanged     = ($TeamsDevice.lastModifiedDateTime).ToLocalTime()
+                    MacAddresses    = $outMacAddress
+                    WhenCreated     = $tmpWhenCreated
+                    WhenChanged     = $tmpWhenChanged
                     ChangedByUser   = $TeamsDevice.lastModifiedBy.user.displayName
                     #endregion
                 }
