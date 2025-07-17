@@ -303,15 +303,18 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
         $hasSharePoint = $false
         $hasTeams = $false
         $hasOffice365 = $false
+        #2025-06-18: Checking if policy is targeted to Intune Enrollment Service
+        $hasIntune = $false
         $SettingValue = ""
         foreach ($Application in $ConditionalAccessPolicy.Conditions.Applications.IncludeApplications) {
             $appDisplayName = ($ServicePrincipals |  Where-Object -Property AppId -eq -Value $Application).DisplayName
             switch ($Application) {
-                "All" { $hasOffice365 = $true; $SettingValue = "All" }
+                "All" { $hasOffice365 = $true; $hasIntune = $true; $SettingValue = "All" }
                 "Office365" { $hasOffice365 = $true; $SettingValue = "Office 365" }
                 "00000002-0000-0ff1-ce00-000000000000" { $hasExchange = $true; $SettingValue += $appDisplayName + "; " }
                 "00000003-0000-0ff1-ce00-000000000000" { $hasSharePoint = $true; $SettingValue += $appDisplayName + "; " }
                 "cc15fd57-2c6c-4117-a88c-83b1d56b4bbe" { $hasTeams = $true; $SettingValue += $appDisplayName + "; " }
+                "d4ebce55-015a-49b5-a083-c84d1797ae8c" { $hasIntune = $true; }
                 default { $SettingValue += $appDisplayName + "; " }
             }
         }
@@ -362,7 +365,8 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         -and ($hasOffice365 `
                             -or $hasTeams `
                             -or $hasExchange `
-                            -or $hasSharePoint) `
+                            -or $hasSharePoint `
+                            -or $hasIntune) `
                         -and ($PolicyState -NE "disabled") `
                         -and $includeDevicePlatform `
                         -and $includeClientApps) `
@@ -573,7 +577,10 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                         $Status = "Warning"
                         $SettingDescription = "Access controls > Grant > Require multi-factor authentication"
                         $PolicyWarnings++
-                        $Comment = "Require multi-factor authentication only supported for Teams Phones and Displays." 
+                        $Comment = "If user-interactive MFA is enforced with conditional access policies. You may use per-user MFA to unblock DCF sign-in temporarily on but this is deprecated in September 2025. https://learn.microsoft.com/en-us/MicrosoftTeams/rooms/android-migration-guide#step-3---considerations-before-deploying-aosp-dm-capable-migration-firmware" 
+                        if ($hasIntune) {
+                            $Comment = "Require MFA will likely to cause problems during/after AOSP migration." 
+                        }
                         if ($DeviceType -eq "MTRWindows") {
                             $Status = "Unsupported"
                             $Comment = "Require multi-factor authentication not supported for MTR Windows."
@@ -644,19 +651,9 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
                 $Setting = "AuthenticationStrength"
                 $SettingDescription = "Access controls > Grant > Require Authentication Strength"
                 $SettingValue = "Enabled"
-                $Comment = "" 
-                $Status = "Supported"
-                if ($ConditionalAccessPolicy.GrantControls.authenticationStrength.requirementsSatisfied -eq "mfa") {
-                    $Status = "Warning"
-                    $SettingDescription = "Access controls > Grant > Require Authentication Strength > Multi-factor authentication"
-                    $PolicyWarnings++
-                    $Comment = "Require multi-factor authentication only supported for Teams Phones and Displays." 
-                    if ($DeviceType -eq "MTRWindows") {
-                        $Status = "Unsupported"
-                        $Comment = "Require multi-factor authentication not supported for MTR Windows. " + $URLTeamsDevicesCA
-                        $PolicyErrors++
-                    }
-                }            
+                $Comment = "Require authentication strength is not supported." 
+                $Status = "Unsupported"
+                $PolicyErrors++         
                 $SettingPSObj = [PSCustomObject][Ordered]@{
                     ID                    = $ID
                     PolicyName            = $ConditionalAccessPolicy.displayName
@@ -717,10 +714,10 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
             $Comment = "" 
             $Status = "Supported"
             if ($ConditionalAccessPolicy.GrantControls.TermsOfUse) {
-                $Status = "Warning"
+                $Status = "Unsupported"
                 $SettingValue = "Enabled"
                 $Comment = $URLTeamsDevicesKnownIssues
-                $PolicyWarnings++
+                $PolicyErrors++
             }
             $SettingPSObj = [PSCustomObject][Ordered]@{
                 ID                    = $ID
@@ -813,10 +810,18 @@ function Test-UcTeamsDevicesConditionalAccessPolicy {
             $Comment = "" 
             $Status = "Supported"
             if ($ConditionalAccessPolicy.SessionControls.SignInFrequency.isEnabled -eq "true") {
-                $Status = "Warning"
-                $SettingValue = "" + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Value + " " + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Type
-                $Comment = "Users will be signout from Teams Device every " + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Value + " " + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Type
-                $PolicyWarnings++
+                if ($ConditionalAccessPolicy.SessionControls.SignInFrequency.signInFrequencyInterval -eq "everyTime") {
+                    $Status = "Unsupported"
+                    $Comment = "Sign In frequency set to every time will cause signin loops. https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-session-lifetime#require-reauthentication-every-time"
+                    $PolicyErrors++
+                }
+                else {
+                    $Status = "Warning"
+                    $Comment = "Users will be signout from Teams Device every " + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Value + " " + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Type
+                    $PolicyWarnings++
+                }
+                 $SettingValue = "" + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Value + " " + $ConditionalAccessPolicy.SessionControls.SignInFrequency.Type
+
             }
             $SettingPSObj = [PSCustomObject][Ordered]@{
                 ID                    = $ID

@@ -40,7 +40,14 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
-
+<br/>1.1.3 - 2025/06/30
+<ul>
+<li>Test-UcTeamsDevicesConditionalAccessPolicy
+<br/>Update: Added check if policy is targeting Intune Enrollment service.
+<br/>Update: Require Authentication Strength is unsupported. 
+<br/>Update: Sign In frequency set to every time is unsupported since it causes signin loops. 
+</li>
+</ul>
 <br/>1.1.2 - 2025/05/11
 <ul>
 <li>Get-UcTeamsDevice
