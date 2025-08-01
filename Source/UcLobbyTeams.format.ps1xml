@@ -274,34 +274,6 @@
 			</TableControl>
 		</View>
 		<View>
-			<Name>M365TenantId</Name>
-			<ViewSelectedBy>
-				<TypeName>M365TenantId</TypeName>
-			</ViewSelectedBy>
-			<TableControl>
-				<TableHeaders>
-					<TableColumnHeader>
-						<Label>Tenant ID</Label>
-					</TableColumnHeader>
-					<TableColumnHeader>
-						<Label>OnMicrosoft Domain</Label>
-					</TableColumnHeader>					
-				</TableHeaders>
-				<TableRowEntries>
-					<TableRowEntry>
-						<TableColumnItems>
-							<TableColumnItem>
-								<PropertyName>TenantID</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>OnMicrosoftDomain</PropertyName>
-							</TableColumnItem>
-						</TableColumnItems>
-					</TableRowEntry>
-				</TableRowEntries>
-			</TableControl>
-		</View>
-		<View>
 			<Name>UcConditionalAccessPolicy</Name>
 			<ViewSelectedBy>
 				<TypeName>UcConditionalAccessPolicy</TypeName>

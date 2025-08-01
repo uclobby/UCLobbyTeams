@@ -36,7 +36,7 @@ function Get-UcM365Domains {
         }
     }
     catch {
-        #20240318 - Support for GCC High tenants.
+        #2024-03-18: Support for GCC High tenants.
         try {
             $AllowedAudiences = Invoke-WebRequest -Uri ("https://login.microsoftonline.us/" + $Domain + "/metadata/json/1") -UseBasicParsing | ConvertFrom-Json | Select-Object -ExpandProperty allowedAudiences
         }

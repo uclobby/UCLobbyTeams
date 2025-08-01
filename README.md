@@ -7,13 +7,7 @@ Please use the PowerShell Gallery to install this module:
 <br/>
 <br/>Available cmdlets:
 
-<br/>Get-UcM365Domains
-<br/>Get-UcM365TenantId 
-<br/>Export-UcM365LicenseAssignment
-
 <br/>Get-UcEntraObjectsOwnedByUser
-
-<br/>Export-UcOneDriveWithMultiplePermissions
 
 <br/>Get-UcTeamsWithSingleOwner
 <br/>Get-UcTeamUsersEmail
@@ -40,6 +34,15 @@ Please use the PowerShell Gallery to install this module:
 <br/>https://uclobby.com/uclobby-teams-powershell-module/
 
 <br/>Change Log:
+<br/>1.1.4 - 2025/08/01
+<ul>
+<li>Get-UcM365Domains, Export-UcM365LicenseAssignment, Get-UcM365TenantId 
+<br/>Major: Moved this cmdlets to UCLobby Microsoft365 PowerShell Module (Install-Module UCLobbyMicrosoft365)
+</li>
+<li>Export-UcOneDriveWithMultiplePermissions
+<br/>Major: Moved this cmdlets to UC Lobby SharePoint PowerShell Module (Install-Module UCLobbySharePoint)
+</li>
+</ul>
 <br/>1.1.3 - 2025/06/30
 <ul>
 <li>Test-UcTeamsDevicesConditionalAccessPolicy

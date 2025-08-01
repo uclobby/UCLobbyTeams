@@ -17,7 +17,25 @@ function Test-UcPowerShellModule {
         [string]$ModuleName
     )
     
-    try { 
+    try {
+        #Region 2025-07-23: We can use the current module name, this will make the code simpler in the other functions.
+        $ModuleName = $MyInvocation.MyCommand.Module.Name
+        if (!($ModuleName)) {
+            Write-Warning "Please specify a module name using the ModuleName parameter."
+            return
+        }
+        $ModuleNameCheck = Get-Variable -Scope Global -Name ($ModuleName + "ModuleCheck") -ErrorAction SilentlyContinue
+        if ($ModuleNameCheck.Value) {
+            return $true
+        }
+        if ($ModuleNameCheck) {
+            Set-Variable -Scope Global -Name ($ModuleName + "ModuleCheck") -Value $true
+        }
+        else {
+            New-Variable -Scope Global -Name ($ModuleName + "ModuleCheck") -Value $true
+        }
+        #endRegion
+         
         #Get all installed versions
         $installedVersions = (Get-Module $ModuleName -ListAvailable | Sort-Object Version -Descending).Version
 

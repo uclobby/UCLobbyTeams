@@ -7,7 +7,7 @@ $ModuleName = Split-Path $PSScriptRoot -Leaf
 
 #Check if Output path exists, if so deletes previous files.
 if (!(Test-Path -Path "$PSScriptRoot\Output\$ModuleName")) {
-    New-Item -Path "$PSScriptRoot\Output\$ModuleName" -ItemType Directory
+    New-Item -Path "$PSScriptRoot\Output\$ModuleName" -ItemType Directory | Out-Null
 }
 else {
     Remove-Item "$PSScriptRoot\Output\$ModuleName\*.*" -Recurse -Force
@@ -27,11 +27,11 @@ if (Test-Path -Path "$PSScriptRoot\Source\$ModuleName.format.ps1xml"){
 $outModuleContent = ""
 $FunctionsToExport = "@("
 
-Get-ChildItem -Path ("$PSScriptRoot\Source\Private") -Filter *.ps1 | ForEach-Object { $outModuleContent += [System.IO.File]::ReadAllText($_.FullName)}
+Get-ChildItem -Path ("$PSScriptRoot\Source\Private") -Filter *.ps1 | ForEach-Object { $outModuleContent += [System.IO.File]::ReadAllText($_.FullName)+[Environment]::NewLine+[Environment]::NewLine}
 
-Get-ChildItem -Path ("$PSScriptRoot\Source\Public") -Filter *.ps1 | ForEach-Object { $outModuleContent += [System.IO.File]::ReadAllText($_.FullName); $FunctionsToExport+= "'" + $_.BaseName + "',"}
+Get-ChildItem -Path ("$PSScriptRoot\Source\Public") -Filter *.ps1 | ForEach-Object { $outModuleContent += [System.IO.File]::ReadAllText($_.FullName)+[Environment]::NewLine+[Environment]::NewLine; $FunctionsToExport+= "'" + $_.BaseName + "',"}
 
-[System.IO.File]::WriteAllText("$PSScriptRoot\Output\$ModuleName\$ModuleName.psm1", ($outModuleContent -join "`n`n"), [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText("$PSScriptRoot\Output\$ModuleName\$ModuleName.psm1", $outModuleContent, [System.Text.Encoding]::UTF8)
 $FunctionsToExport = $FunctionsToExport.Substring(0,$FunctionsToExport.Length-1) + ")"
 #endregion
 
@@ -43,7 +43,7 @@ $ModuleManifest = [System.IO.File]::ReadAllText("$PSScriptRoot\Source\$ModuleNam
 $ModuleManifest = $ModuleManifest -replace '#%ModuleVersion%', ("""$Version""")
 $ModuleManifest = $ModuleManifest -replace '#%FunctionsToExport%', $FunctionsToExport
 
-[System.IO.File]::WriteAllText("$PSScriptRoot\Output\$ModuleName\$ModuleName.psd1", ($ModuleManifest -join "`n`n"), [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText("$PSScriptRoot\Output\$ModuleName\$ModuleName.psd1", $ModuleManifest, [System.Text.Encoding]::UTF8)
 
 } else {
     Write-Warning "Missing Manifest file: $ModuleName.psd1"
