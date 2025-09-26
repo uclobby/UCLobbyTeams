@@ -53,6 +53,7 @@ function Get-UcTeamsDevice {
         PS> Get-UcTeamsDevice -Detailed
 
     #>
+    [cmdletbinding()]
     param(
         [string]$TACDeviceID,
         [ValidateSet("Phone", "MTR", "MTRA", "MTRW", "SurfaceHub", "Display", "Panel", "SIPPhone")]
@@ -117,15 +118,31 @@ function Get-UcTeamsDevice {
                     }
                 }
                 if ($DeviceFilter) {
-                    $RequestPath = $BaseDevicesAPIPath + "?filterJson= " + [System.Web.HttpUtility]::UrlEncode($DeviceFilter) + "&fetchCurrentSoftwareVersions=true"
+                    $RequestPath = $BaseDevicesAPIPath + "?limit=50&filterJson=" + [System.Web.HttpUtility]::UrlEncode($DeviceFilter) + "&fetchCurrentSoftwareVersions=true"
                 }
                 else {
-                    $RequestPath = $BaseDevicesAPIPath + "?fetchCurrentSoftwareVersions=true"
+                    $RequestPath = $BaseDevicesAPIPath + "?limit=50&fetchCurrentSoftwareVersions=true"
                 }
-                #TODO: Page iteration will be required for larger deployments.
-                $TeamsDevices = (Invoke-EntraRequest -Path $RequestPath -Service TeamsDeviceTAC).devices
+                
+                #region 2025-09-25: Adding page iterarion.
+                Write-Progress -Activity "Getting Teams Device Info from TAC" -Status "0 of ?"
+                $TACReply = Invoke-EntraRequest -Path $RequestPath -Service TeamsDeviceTAC
+                $TeamsDevices = $TACReply.devices
+                $TACDeviceCount = $TACReply.devices.count
+                Write-Verbose "First Request with $TACDeviceCount devices."
+                while(!([string]::IsNullOrEmpty($TACReply.continuationToken))){
+                    Write-Progress -Activity "Getting Teams Device Info from TAC" -Status "$TACDeviceCount of ?"
+                    $RequestNextPage = $RequestPath+"&continuationToken=" + [System.Web.HttpUtility]::UrlEncode($TACReply.continuationToken)
+                    Write-Verbose "Requesting next page with continuation token: $RequestNextPage"
+                    $TACReply = Invoke-EntraRequest -Path $RequestNextPage -Service TeamsDeviceTAC
+                    $TeamsDevices += $TACReply.devices
+                    $TACDeviceCount += $TACReply.devices.count
+                }
+                #endregion
             }
+            Write-Verbose ("Finished fetching devices, found $TACDeviceCount devices in TAC.")
             foreach ($TeamsDevice in $TeamsDevices) {
+                Write-Progress -Activity "Processing Teams Device information" -Status "$devicesProcessed of $TACDeviceCount"
                 $outMacAddress = ""
                 $lastTACHeartBeat = $null
                 foreach ($macAddressInfo in $TeamsDevice.macAddressInfos) {
@@ -144,8 +161,10 @@ function Get-UcTeamsDevice {
                     #Getting the Health and Operations (commands) Information
                     #$RequestHealthPath = $BaseDevicesAPIPath + "/" + $TeamsDevice.baseInfo.id + "/health"
                     #$TeamsDeviceHealth = Invoke-EntraRequest -Path $RequestHealthPath -Service TeamsDeviceTAC
-                    $RequestOperationPath = $BaseDevicesAPIPath + "/" + $TeamsDevice.baseInfo.id + "/commands?FetchInitiatorInfo=true"
-                    $LastTeamsDeviceOperation = (Invoke-EntraRequest -Path $RequestOperationPath -Service TeamsDeviceTAC).commands | Sort-Object queuedAt -Descending | Select-Object -First 1
+                    try{
+                        $RequestOperationPath = $BaseDevicesAPIPath + "/" + $TeamsDevice.baseInfo.id + "/commands?FetchInitiatorInfo=true"
+                        $LastTeamsDeviceOperation = (Invoke-EntraRequest -Path $RequestOperationPath -Service TeamsDeviceTAC -ErrorAction SilentlyContinue).commands | Sort-Object queuedAt -Descending | Select-Object -First 1
+                    } catch{}
 
                     $lastHistoryInitiatedByName = "System (Automatic)"
                     $lastHistoryInitiatedByUpn = ""
@@ -246,7 +265,6 @@ function Get-UcTeamsDevice {
         #endregion
     }
     else {
-
         if (!(Test-UcServiceConnection -Type MSGraph -Scopes "TeamworkDevice.Read.All", "User.Read.All" -AltScopes ("TeamworkDevice.Read.All", "Directory.Read.All"))) {
             return
         }
@@ -462,7 +480,6 @@ function Get-UcTeamsDevice {
                     $LastHistoryErrorMessage = ""
                 }
 
-                
                 #region 2025-03-31: Fix "You cannot call a method on a null-valued expression" if date were empty.
                 $tmpConfigurationCreateDate = ""
                 $tmpConfigurationLastModifiedDate = ""
